@@ -17,6 +17,7 @@
 
     <dependencies>
 
+        <!-- JavaFX -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -29,6 +30,14 @@
             <version>21.0.6</version>
         </dependency>
 
+        <!-- Gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.13.1</version>
+        </dependency>
+
+        <!-- JUnit -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -48,6 +57,7 @@
     <build>
         <plugins>
 
+            <!-- Compilador Java -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -58,6 +68,7 @@
                 </configuration>
             </plugin>
 
+            <!-- JavaFX -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -68,7 +79,7 @@
                         <id>default-cli</id>
 
                         <configuration>
-                            <mainClass>com.example.chatdesktop/com.example.chatdesktop.HelloApplication</mainClass>
+                            <mainClass>com.example.chatdesktop/com.example.chatdesktop.Main</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>

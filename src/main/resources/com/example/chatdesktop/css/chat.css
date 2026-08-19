@@ -1,0 +1,16 @@
+.titulo {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.modelo {
+    -fx-text-fill: #666666;
+}
+
+.text-area {
+    -fx-font-size: 14px;
+}
+
+.button {
+    -fx-cursor: hand;
+}
