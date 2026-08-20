@@ -23,9 +23,13 @@ public class ChatController {
     @FXML
     private Button botaoEnviar;
 
+    @FXML
+    private Button botaoNovaConversa;
+
     private GroqService groqService;
 
     private List<ChatMessage> historico;
+
 
     @FXML
     public void initialize() {
@@ -33,6 +37,14 @@ public class ChatController {
         groqService = new GroqService();
 
         historico = new ArrayList<>();
+
+        iniciarHistorico();
+    }
+
+
+    private void iniciarHistorico() {
+
+        historico.clear();
 
         historico.add(
                 new ChatMessage(
@@ -42,6 +54,7 @@ public class ChatController {
                 )
         );
     }
+
 
     @FXML
     private void enviarMensagem() {
@@ -82,6 +95,7 @@ public class ChatController {
                 );
     }
 
+
     private void receberResposta(String resposta) {
 
         Platform.runLater(() -> {
@@ -103,6 +117,7 @@ public class ChatController {
         });
     }
 
+
     private Void tratarErro(Throwable erro) {
 
         Platform.runLater(() -> {
@@ -119,16 +134,46 @@ public class ChatController {
         return null;
     }
 
+
+    @FXML
+    private void novaConversa() {
+
+        // Limpa as mensagens que aparecem na tela
+        areaChat.clear();
+
+        // Limpa o histórico e adiciona novamente
+        // a instrução inicial da IA
+        iniciarHistorico();
+
+        // Limpa o campo de mensagem
+        campoMensagem.clear();
+
+        // Garante que a interface fique liberada
+        liberarInterface();
+
+        // Coloca o cursor no campo de mensagem
+        campoMensagem.requestFocus();
+    }
+
+
     private void bloquearInterface() {
 
         campoMensagem.setDisable(true);
+
         botaoEnviar.setDisable(true);
+
+        botaoNovaConversa.setDisable(true);
     }
+
 
     private void liberarInterface() {
 
         campoMensagem.setDisable(false);
+
         botaoEnviar.setDisable(false);
+
+        botaoNovaConversa.setDisable(false);
+
         campoMensagem.requestFocus();
     }
 }
