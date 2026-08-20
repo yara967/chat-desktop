@@ -8,6 +8,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +28,14 @@ public class ChatController {
     @FXML
     private Button botaoNovaConversa;
 
+    @FXML
+    private Button botaoCopiarResposta;
+
     private GroqService groqService;
 
     private List<ChatMessage> historico;
+
+    private String ultimaRespostaIA = "";
 
 
     @FXML
@@ -53,6 +60,8 @@ public class ChatController {
                                 "Responda sempre em português do Brasil."
                 )
         );
+
+        ultimaRespostaIA = "";
     }
 
 
@@ -100,6 +109,8 @@ public class ChatController {
 
         Platform.runLater(() -> {
 
+            ultimaRespostaIA = resposta;
+
             areaChat.appendText(
                     "IA:\n"
                             + resposta
@@ -138,21 +149,32 @@ public class ChatController {
     @FXML
     private void novaConversa() {
 
-        // Limpa as mensagens que aparecem na tela
         areaChat.clear();
 
-        // Limpa o histórico e adiciona novamente
-        // a instrução inicial da IA
         iniciarHistorico();
 
-        // Limpa o campo de mensagem
         campoMensagem.clear();
 
-        // Garante que a interface fique liberada
         liberarInterface();
 
-        // Coloca o cursor no campo de mensagem
         campoMensagem.requestFocus();
+    }
+
+
+    @FXML
+    private void copiarResposta() {
+
+        if (ultimaRespostaIA == null || ultimaRespostaIA.isEmpty()) {
+            return;
+        }
+
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+
+        ClipboardContent conteudo = new ClipboardContent();
+
+        conteudo.putString(ultimaRespostaIA);
+
+        clipboard.setContent(conteudo);
     }
 
 

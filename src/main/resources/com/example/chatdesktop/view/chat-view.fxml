@@ -60,6 +60,15 @@
                     onAction="#novaConversa"
                     styleClass="botao-nova-conversa"/>
 
+
+            <!-- BOTÃO COPIAR RESPOSTA -->
+
+            <Button
+                    fx:id="botaoCopiarResposta"
+                    text="⧉ Copiar resposta"
+                    onAction="#copiarResposta"
+                    styleClass="botao-copiar-resposta"/>
+
         </HBox>
 
     </top>
