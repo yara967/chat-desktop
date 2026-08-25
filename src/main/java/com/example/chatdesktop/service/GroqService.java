@@ -73,6 +73,10 @@ public class GroqService {
                     GroqConfig.getApiKey();
 
 
+            // =========================================
+            // CHAVE NÃO CONFIGURADA
+            // =========================================
+
             if (apiKey == null
                     || apiKey.isBlank()) {
 
@@ -149,7 +153,7 @@ public class GroqService {
 
                                 return CompletableFuture.failedFuture(
                                         new RuntimeException(
-                                                "Não foi possível conectar à internet. "
+                                                "Sem conexão com a internet. "
                                                         + "Verifique sua conexão e tente novamente."
                                         )
                                 );
@@ -184,12 +188,12 @@ public class GroqService {
 
 
                             // =========================================
-                            // ERRO DESCONHECIDO
+                            // FALHA DE COMUNICAÇÃO
                             // =========================================
 
                             return CompletableFuture.failedFuture(
                                     new RuntimeException(
-                                            "Ocorreu uma falha de comunicação "
+                                            "Não foi possível se comunicar "
                                                     + "com o serviço da IA. "
                                                     + "Tente novamente."
                                     )
@@ -198,6 +202,12 @@ public class GroqService {
                 );
     }
 
+
+    /*
+     * =========================================
+     * CRIAR JSON
+     * =========================================
+     */
 
     private String criarJson(
             List<ChatMessage> historico
@@ -249,6 +259,12 @@ public class GroqService {
     }
 
 
+    /*
+     * =========================================
+     * PROCESSAR RESPOSTA
+     * =========================================
+     */
+
     private String processarResposta(
             HttpResponse<String> response
     ) {
@@ -297,7 +313,7 @@ public class GroqService {
 
 
         // =========================================
-        // NÃO AUTORIZADO / PERMISSÃO
+        // ACESSO NÃO AUTORIZADO
         // =========================================
 
         if (status == 403) {
@@ -329,7 +345,7 @@ public class GroqService {
         if (status != 200) {
 
             throw new RuntimeException(
-                    "Ocorreu uma falha de comunicação com o serviço. "
+                    "Ocorreu uma falha de comunicação com o serviço da IA. "
                             + "Tente novamente."
             );
         }
@@ -385,6 +401,12 @@ public class GroqService {
     }
 
 
+    /*
+     * =========================================
+     * OBTER CAUSA REAL DO ERRO
+     * =========================================
+     */
+
     private Throwable obterCausa(
             Throwable erro
     ) {
@@ -399,10 +421,6 @@ public class GroqService {
                         && causa.getCause() != null
         ) {
 
-            /*
-             * Só continua descendo quando existe
-             * uma causa real por trás do erro.
-             */
             causa =
                     causa.getCause();
         }
