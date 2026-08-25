@@ -25,6 +25,7 @@
 
         <VBox
                 prefWidth="220"
+                spacing="10"
                 styleClass="sidebar">
 
             <padding>
