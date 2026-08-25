@@ -53,7 +53,6 @@ public class ChatController {
     @FXML
     private Button botaoOpcoes;
 
-
     private GroqService groqService;
 
     private List<ChatMessage> historico;
@@ -62,12 +61,10 @@ public class ChatController {
 
     private boolean temaEscuro = false;
 
-
     /*
      * ID usado para saber qual conversa está aberta.
      */
     private int idConversaAtual = 0;
-
 
     /*
      * Guarda qual conversa salva está aberta.
@@ -76,13 +73,11 @@ public class ChatController {
      */
     private int conversaSalvaAtual = -1;
 
-
     /*
      * Todas as conversas salvas.
      */
     private final List<List<ChatMessage>> conversasSalvas =
             new ArrayList<>();
-
 
     @FXML
     public void initialize() {
@@ -99,7 +94,6 @@ public class ChatController {
 
         configurarAtalhos();
     }
-
 
     /*
      * =========================================
@@ -122,7 +116,6 @@ public class ChatController {
         ultimaRespostaIA = "";
     }
 
-
     /*
      * =========================================
      * ATALHOS
@@ -135,6 +128,7 @@ public class ChatController {
                 KeyEvent.KEY_PRESSED,
                 evento -> {
 
+                    // Ctrl + N = Nova conversa
                     if (evento.isControlDown()
                             && evento.getCode() == KeyCode.N) {
 
@@ -145,7 +139,7 @@ public class ChatController {
                         return;
                     }
 
-
+                    // Ctrl + L = Limpar campo
                     if (evento.isControlDown()
                             && evento.getCode() == KeyCode.L) {
 
@@ -154,11 +148,21 @@ public class ChatController {
                         campoMensagem.requestFocus();
 
                         evento.consume();
+
+                        return;
+                    }
+
+                    // Enter = Enviar mensagem
+                    if (evento.getCode() == KeyCode.ENTER
+                            && campoMensagem.isFocused()) {
+
+                        enviarMensagem();
+
+                        evento.consume();
                     }
                 }
         );
     }
-
 
     /*
      * =========================================
@@ -176,7 +180,6 @@ public class ChatController {
             return;
         }
 
-
         /*
          * Se estamos em uma conversa antiga,
          * ela continuará sendo aquela conversa.
@@ -187,16 +190,13 @@ public class ChatController {
         int idDaMensagem =
                 idConversaAtual;
 
-
         campoMensagem.clear();
-
 
         adicionarBalao(
                 "Você",
                 mensagem,
                 true
         );
-
 
         historico.add(
                 new ChatMessage(
@@ -205,9 +205,7 @@ public class ChatController {
                 )
         );
 
-
         bloquearInterface();
-
 
         groqService
                 .enviarMensagem(historico)
@@ -226,7 +224,6 @@ public class ChatController {
                                 )
                 );
     }
-
 
     /*
      * =========================================
@@ -250,9 +247,7 @@ public class ChatController {
                 return;
             }
 
-
             ultimaRespostaIA = resposta;
-
 
             adicionarBalao(
                     "IA",
@@ -260,14 +255,12 @@ public class ChatController {
                     false
             );
 
-
             historico.add(
                     new ChatMessage(
                             "assistant",
                             resposta
                     )
             );
-
 
             /*
              * Se estamos dentro de uma conversa
@@ -278,11 +271,9 @@ public class ChatController {
                 atualizarConversaSalva();
             }
 
-
             liberarInterface();
         });
     }
-
 
     /*
      * =========================================
@@ -310,13 +301,11 @@ public class ChatController {
                 "balao-mensagem"
         );
 
-
         HBox linha = new HBox();
 
         linha.setMaxWidth(
                 Double.MAX_VALUE
         );
-
 
         if (usuario) {
 
@@ -339,17 +328,14 @@ public class ChatController {
             );
         }
 
-
         linha.getChildren().add(balao);
 
         chatBox.getChildren().add(linha);
-
 
         Platform.runLater(() ->
                 scrollChat.setVvalue(1.0)
         );
     }
-
 
     /*
      * =========================================
@@ -366,7 +352,6 @@ public class ChatController {
          */
         idConversaAtual++;
 
-
         /*
          * Se for uma conversa NOVA, salva ela.
          *
@@ -381,12 +366,10 @@ public class ChatController {
             }
         }
 
-
         /*
          * Agora realmente começa uma nova conversa.
          */
         conversaSalvaAtual = -1;
-
 
         chatBox.getChildren().clear();
 
@@ -398,7 +381,6 @@ public class ChatController {
 
         campoMensagem.requestFocus();
     }
-
 
     /*
      * =========================================
@@ -421,7 +403,6 @@ public class ChatController {
         return false;
     }
 
-
     /*
      * =========================================
      * SALVAR CONVERSA NOVA
@@ -433,11 +414,9 @@ public class ChatController {
         List<ChatMessage> copia =
                 copiarHistorico();
 
-
         if (copia.isEmpty()) {
             return;
         }
-
 
         /*
          * Verifica se essa conversa já existe
@@ -455,12 +434,10 @@ public class ChatController {
             }
         }
 
-
         conversasSalvas.add(copia);
 
         atualizarHistoricoVisual();
     }
-
 
     /*
      * =========================================
@@ -477,16 +454,13 @@ public class ChatController {
             return;
         }
 
-
         conversasSalvas.set(
                 conversaSalvaAtual,
                 copiarHistorico()
         );
 
-
         atualizarHistoricoVisual();
     }
-
 
     /*
      * =========================================
@@ -499,7 +473,6 @@ public class ChatController {
         List<ChatMessage> copia =
                 new ArrayList<>();
 
-
         for (ChatMessage mensagem :
                 historico) {
 
@@ -511,10 +484,8 @@ public class ChatController {
             );
         }
 
-
         return copia;
     }
-
 
     /*
      * =========================================
@@ -532,7 +503,6 @@ public class ChatController {
             return false;
         }
 
-
         for (int i = 0;
              i < primeira.size();
              i++) {
@@ -543,7 +513,6 @@ public class ChatController {
             ChatMessage mensagem2 =
                     segunda.get(i);
 
-
             if (!mensagem1.getRole()
                     .equals(
                             mensagem2.getRole()
@@ -551,7 +520,6 @@ public class ChatController {
 
                 return false;
             }
-
 
             if (!mensagem1.getContent()
                     .equals(
@@ -562,10 +530,8 @@ public class ChatController {
             }
         }
 
-
         return true;
     }
-
 
     /*
      * =========================================
@@ -577,23 +543,19 @@ public class ChatController {
 
         historicoBox.getChildren().clear();
 
-
         for (int i = 0;
              i < conversasSalvas.size();
              i++) {
 
             final int indice = i;
 
-
             String titulo =
                     criarTituloConversa(
                             conversasSalvas.get(i)
                     );
 
-
             Label conversa =
                     new Label(titulo);
-
 
             conversa.setMaxWidth(
                     Double.MAX_VALUE
@@ -601,11 +563,9 @@ public class ChatController {
 
             conversa.setWrapText(true);
 
-
             conversa.getStyleClass().add(
                     "item-historico"
             );
-
 
             /*
              * Quando clicar, abre a conversa.
@@ -615,13 +575,11 @@ public class ChatController {
                             abrirConversa(indice)
             );
 
-
             historicoBox.getChildren().add(
                     conversa
             );
         }
     }
-
 
     /*
      * =========================================
@@ -643,7 +601,6 @@ public class ChatController {
                 String texto =
                         mensagem.getContent().trim();
 
-
                 if (texto.length() > 25) {
 
                     texto =
@@ -651,15 +608,12 @@ public class ChatController {
                                     + "...";
                 }
 
-
                 return "💬 " + texto;
             }
         }
 
-
         return "💬 Nova conversa";
     }
-
 
     /*
      * =========================================
@@ -676,7 +630,6 @@ public class ChatController {
             return;
         }
 
-
         /*
          * Se estiver esperando resposta da IA,
          * não troca de conversa.
@@ -686,12 +639,10 @@ public class ChatController {
             return;
         }
 
-
         /*
          * Nova identificação para a conversa aberta.
          */
         idConversaAtual++;
-
 
         /*
          * Muito importante:
@@ -700,14 +651,11 @@ public class ChatController {
          */
         conversaSalvaAtual = indice;
 
-
         List<ChatMessage> conversaSalva =
                 conversasSalvas.get(indice);
 
-
         historico =
                 new ArrayList<>();
-
 
         for (ChatMessage mensagem :
                 conversaSalva) {
@@ -720,11 +668,9 @@ public class ChatController {
             );
         }
 
-
         chatBox.getChildren().clear();
 
         ultimaRespostaIA = "";
-
 
         /*
          * Mostra novamente todas as mensagens.
@@ -749,7 +695,6 @@ public class ChatController {
                 ultimaRespostaIA =
                         mensagem.getContent();
 
-
                 adicionarBalao(
                         "IA",
                         mensagem.getContent(),
@@ -758,14 +703,12 @@ public class ChatController {
             }
         }
 
-
         campoMensagem.clear();
 
         liberarInterface();
 
         campoMensagem.requestFocus();
     }
-
 
     /*
      * =========================================
@@ -782,25 +725,20 @@ public class ChatController {
             return;
         }
 
-
         Clipboard clipboard =
                 Clipboard.getSystemClipboard();
 
-
         ClipboardContent conteudo =
                 new ClipboardContent();
-
 
         conteudo.putString(
                 ultimaRespostaIA
         );
 
-
         clipboard.setContent(
                 conteudo
         );
     }
-
 
     /*
      * =========================================
@@ -813,7 +751,6 @@ public class ChatController {
 
         temaEscuro = !temaEscuro;
 
-
         if (temaEscuro) {
 
             if (!rootPane.getStyleClass()
@@ -823,7 +760,6 @@ public class ChatController {
                         "tema-escuro"
                 );
             }
-
 
             botaoTema.setText(
                     "☀ Claro"
@@ -835,13 +771,11 @@ public class ChatController {
                     "tema-escuro"
             );
 
-
             botaoTema.setText(
                     "🌙 Escuro"
             );
         }
     }
-
 
     /*
      * =========================================
@@ -858,7 +792,6 @@ public class ChatController {
                 false
         );
     }
-
 
     /*
      * =========================================
@@ -882,9 +815,7 @@ public class ChatController {
                 return;
             }
 
-
             String mensagemErro;
-
 
             if (erro.getCause() != null
                     && erro.getCause().getMessage() != null) {
@@ -903,21 +834,17 @@ public class ChatController {
                         "Não foi possível se comunicar com a IA.";
             }
 
-
             adicionarBalao(
                     "Erro",
                     mensagemErro,
                     false
             );
 
-
             liberarInterface();
         });
 
-
         return null;
     }
-
 
     /*
      * =========================================
@@ -933,7 +860,6 @@ public class ChatController {
 
         botaoNovaConversa.setDisable(true);
     }
-
 
     /*
      * =========================================
