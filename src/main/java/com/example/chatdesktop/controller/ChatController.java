@@ -90,7 +90,8 @@ public class ChatController {
 
         temaEscuro = false;
 
-        botaoTema.setText("🌙 Escuro");
+        // Tema inicial: claro
+        botaoTema.setText("☀ Claro");
 
         configurarAtalhos();
     }
@@ -231,6 +232,10 @@ public class ChatController {
 
         Platform.runLater(() -> {
 
+            /*
+             * Impede resposta atrasada de aparecer
+             * em outra conversa.
+             */
             if (idDaMensagem != idConversaAtual) {
 
                 return;
@@ -251,6 +256,10 @@ public class ChatController {
                     )
             );
 
+            /*
+             * Se estamos dentro de uma conversa
+             * antiga, atualiza essa conversa salva.
+             */
             if (conversaSalvaAtual >= 0) {
 
                 atualizarConversaSalva();
@@ -336,8 +345,18 @@ public class ChatController {
     @FXML
     private void novaConversa() {
 
+        /*
+         * Primeiro invalida qualquer resposta
+         * que ainda esteja chegando da conversa anterior.
+         */
         idConversaAtual++;
 
+        /*
+         * Se for uma conversa NOVA, salva ela.
+         *
+         * Se for uma conversa antiga que já está
+         * salva, NÃO cria outra cópia.
+         */
         if (conversaSalvaAtual == -1) {
 
             if (possuiMensagens()) {
@@ -346,6 +365,9 @@ public class ChatController {
             }
         }
 
+        /*
+         * Agora realmente começa uma nova conversa.
+         */
         conversaSalvaAtual = -1;
 
         chatBox.getChildren().clear();
@@ -395,6 +417,10 @@ public class ChatController {
             return;
         }
 
+        /*
+         * Verifica se essa conversa já existe
+         * exatamente igual no histórico.
+         */
         for (List<ChatMessage> conversa :
                 conversasSalvas) {
 
@@ -540,6 +566,9 @@ public class ChatController {
                     "item-historico"
             );
 
+            /*
+             * Quando clicar, abre a conversa.
+             */
             conversa.setOnMouseClicked(
                     evento ->
                             abrirConversa(indice)
@@ -568,9 +597,19 @@ public class ChatController {
                     mensagem.getRole()
             )) {
 
+                /*
+                 * Pega a primeira mensagem do usuário
+                 * e remove quebras de linha.
+                 */
                 String texto =
-                        mensagem.getContent().trim();
+                        mensagem.getContent()
+                                .trim()
+                                .replace("\n", " ")
+                                .replace("\r", " ");
 
+                /*
+                 * Limita o tamanho do título.
+                 */
                 if (texto.length() > 25) {
 
                     texto =
@@ -600,13 +639,24 @@ public class ChatController {
             return;
         }
 
+        /*
+         * Se estiver esperando resposta da IA,
+         * não troca de conversa.
+         */
         if (campoMensagem.isDisabled()) {
 
             return;
         }
 
+        /*
+         * Nova identificação para a conversa aberta.
+         */
         idConversaAtual++;
 
+        /*
+         * Agora sabemos qual conversa
+         * do histórico estamos visualizando.
+         */
         conversaSalvaAtual = indice;
 
         List<ChatMessage> conversaSalva =
@@ -630,6 +680,9 @@ public class ChatController {
 
         ultimaRespostaIA = "";
 
+        /*
+         * Mostra novamente todas as mensagens.
+         */
         for (ChatMessage mensagem :
                 historico) {
 
@@ -716,8 +769,9 @@ public class ChatController {
                 );
             }
 
+            // Tema atual: escuro
             botaoTema.setText(
-                    "☀ Claro"
+                    "🌙 Escuro"
             );
 
         } else {
@@ -726,8 +780,9 @@ public class ChatController {
                     "tema-escuro"
             );
 
+            // Tema atual: claro
             botaoTema.setText(
-                    "🌙 Escuro"
+                    "☀ Claro"
             );
         }
     }
@@ -761,6 +816,10 @@ public class ChatController {
 
         Platform.runLater(() -> {
 
+            /*
+             * Não mostra erro de uma conversa
+             * antiga em outra conversa.
+             */
             if (idDaMensagem != idConversaAtual) {
 
                 return;
