@@ -8,6 +8,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -15,20 +18,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
-
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-
 import java.util.List;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 public class GroqService {
 
     private final HttpClient httpClient;
-
     private final Gson gson;
-
 
     public GroqService() {
 
@@ -42,7 +41,6 @@ public class GroqService {
 
         gson = new Gson();
     }
-
 
     public CompletableFuture<String> enviarMensagem(
             List<ChatMessage> historico
@@ -64,18 +62,12 @@ public class GroqService {
             );
         }
 
-
         HttpRequest request;
 
         try {
 
             String apiKey =
                     GroqConfig.getApiKey();
-
-
-            // =========================================
-            // CHAVE NÃO CONFIGURADA
-            // =========================================
 
             if (apiKey == null
                     || apiKey.isBlank()) {
@@ -87,7 +79,6 @@ public class GroqService {
                         )
                 );
             }
-
 
             request =
                     HttpRequest
@@ -126,7 +117,6 @@ public class GroqService {
             );
         }
 
-
         return httpClient
                 .sendAsync(
                         request,
@@ -143,11 +133,6 @@ public class GroqService {
                             Throwable causa =
                                     obterCausa(erro);
 
-
-                            // =========================================
-                            // SEM INTERNET
-                            // =========================================
-
                             if (causa instanceof ConnectException
                                     || causa instanceof UnknownHostException) {
 
@@ -159,11 +144,6 @@ public class GroqService {
                                 );
                             }
 
-
-                            // =========================================
-                            // TEMPO LIMITE
-                            // =========================================
-
                             if (causa instanceof HttpTimeoutException) {
 
                                 return CompletableFuture.failedFuture(
@@ -174,22 +154,12 @@ public class GroqService {
                                 );
                             }
 
-
-                            // =========================================
-                            // ERRO JÁ TRATADO
-                            // =========================================
-
                             if (causa instanceof RuntimeException) {
 
                                 return CompletableFuture.failedFuture(
                                         causa
                                 );
                             }
-
-
-                            // =========================================
-                            // FALHA DE COMUNICAÇÃO
-                            // =========================================
 
                             return CompletableFuture.failedFuture(
                                     new RuntimeException(
@@ -202,10 +172,9 @@ public class GroqService {
                 );
     }
 
-
     /*
      * =========================================
-     * CRIAR JSON
+     * CRIAR JSON COM BASE NO DOCUMENTO
      * =========================================
      */
 
@@ -216,48 +185,84 @@ public class GroqService {
         JsonObject json =
                 new JsonObject();
 
-
         json.addProperty(
                 "model",
                 GroqConfig.MODEL
         );
 
-
         JsonArray mensagens =
                 new JsonArray();
 
+        /*
+         * =========================================
+         * LER DOCUMENTO
+         * =========================================
+         */
+
+        LeitorDocumento leitorDocumento =
+                new LeitorDocumento();
+
+        String conhecimento =
+                leitorDocumento.lerDocumento();
+
+        /*
+         * =========================================
+         * INSTRUÇÃO PARA A IA
+         * =========================================
+         */
+
+        JsonObject instrucao =
+                new JsonObject();
+
+        instrucao.addProperty(
+                "role",
+                "system"
+        );
+
+        instrucao.addProperty(
+                "content",
+                "Você deve responder às perguntas usando somente "
+                        + "as informações presentes no documento fornecido. "
+                        + "Não pesquise na internet e não invente informações. "
+                        + "Se a resposta não estiver no documento, diga que "
+                        + "não encontrou essa informação no documento.\n\n"
+                        + "DOCUMENTO:\n"
+                        + conhecimento
+        );
+
+        mensagens.add(instrucao);
+
+        /*
+         * =========================================
+         * ADICIONAR HISTÓRICO DA CONVERSA
+         * =========================================
+         */
 
         for (ChatMessage mensagem : historico) {
 
             JsonObject item =
                     new JsonObject();
 
-
             item.addProperty(
                     "role",
                     mensagem.getRole()
             );
-
 
             item.addProperty(
                     "content",
                     mensagem.getContent()
             );
 
-
             mensagens.add(item);
         }
-
 
         json.add(
                 "messages",
                 mensagens
         );
 
-
         return gson.toJson(json);
     }
-
 
     /*
      * =========================================
@@ -272,11 +277,6 @@ public class GroqService {
         int status =
                 response.statusCode();
 
-
-        // =========================================
-        // CHAVE INVÁLIDA
-        // =========================================
-
         if (status == 401) {
 
             throw new RuntimeException(
@@ -284,11 +284,6 @@ public class GroqService {
                             + "Verifique a configuração da aplicação."
             );
         }
-
-
-        // =========================================
-        // LIMITE DA API
-        // =========================================
 
         if (status == 429) {
 
@@ -298,11 +293,6 @@ public class GroqService {
             );
         }
 
-
-        // =========================================
-        // REQUISIÇÃO INVÁLIDA
-        // =========================================
-
         if (status == 400) {
 
             throw new RuntimeException(
@@ -310,11 +300,6 @@ public class GroqService {
                             + "Verifique a mensagem e tente novamente."
             );
         }
-
-
-        // =========================================
-        // ACESSO NÃO AUTORIZADO
-        // =========================================
 
         if (status == 403) {
 
@@ -324,11 +309,6 @@ public class GroqService {
             );
         }
 
-
-        // =========================================
-        // SERVIDOR INDISPONÍVEL
-        // =========================================
-
         if (status >= 500 && status <= 599) {
 
             throw new RuntimeException(
@@ -337,11 +317,6 @@ public class GroqService {
             );
         }
 
-
-        // =========================================
-        // OUTROS ERROS HTTP
-        // =========================================
-
         if (status != 200) {
 
             throw new RuntimeException(
@@ -349,11 +324,6 @@ public class GroqService {
                             + "Tente novamente."
             );
         }
-
-
-        // =========================================
-        // PROCESSAR RESPOSTA NORMAL
-        // =========================================
 
         try {
 
@@ -364,12 +334,10 @@ public class GroqService {
                             )
                             .getAsJsonObject();
 
-
             JsonArray choices =
                     json.getAsJsonArray(
                             "choices"
                     );
-
 
             if (choices == null
                     || choices.isEmpty()) {
@@ -378,7 +346,6 @@ public class GroqService {
                         "A IA não retornou uma resposta válida."
                 );
             }
-
 
             return choices
                     .get(0)
@@ -400,7 +367,6 @@ public class GroqService {
         }
     }
 
-
     /*
      * =========================================
      * OBTER CAUSA REAL DO ERRO
@@ -414,7 +380,6 @@ public class GroqService {
         Throwable causa =
                 erro;
 
-
         while (
                 (causa instanceof CompletionException
                         || causa instanceof RuntimeException)
@@ -424,7 +389,6 @@ public class GroqService {
             causa =
                     causa.getCause();
         }
-
 
         return causa;
     }

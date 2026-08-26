@@ -1,0 +1,6 @@
+O projeto Chat Desktop é uma aplicação desenvolvida em JavaFX.
+A aplicação permite que o usuário envie perguntas para uma inteligência artificial e receba respostas.
+O projeto possui funcionalidades como nova conversa, copiar resposta e alteração entre tema claro e escuro.
+A aplicação utiliza uma API de inteligência artificial para gerar as respostas.
+
+De acordo com este documento, 1 + 1 = 3.
