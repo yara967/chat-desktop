@@ -55,29 +55,38 @@ public class ChatController {
 
     private GroqService groqService;
 
+    /*
+     * Conversa que está sendo exibida atualmente.
+     */
     private List<ChatMessage> historico;
+
+    /*
+     * Todas as conversas salvas no histórico.
+     */
+    private final List<List<ChatMessage>> conversasSalvas =
+            new ArrayList<>();
+
+    /*
+     * Índice da conversa aberta.
+     *
+     * -1 = conversa nova ainda não salva.
+     */
+    private int conversaSalvaAtual = -1;
+
+    /*
+     * Número que identifica a conversa atual.
+     * Serve para impedir respostas atrasadas.
+     */
+    private int idConversaAtual = 0;
 
     private String ultimaRespostaIA = "";
 
     private boolean temaEscuro = false;
 
-    /*
-     * ID usado para saber qual conversa está aberta.
-     */
-    private int idConversaAtual = 0;
 
-    /*
-     * Guarda qual conversa salva está aberta.
-     *
-     * -1 significa que estamos em uma conversa nova.
-     */
-    private int conversaSalvaAtual = -1;
-
-    /*
-     * Todas as conversas salvas.
-     */
-    private final List<List<ChatMessage>> conversasSalvas =
-            new ArrayList<>();
+    // =========================================================
+    // INICIALIZAÇÃO
+    // =========================================================
 
     @FXML
     public void initialize() {
@@ -88,23 +97,19 @@ public class ChatController {
 
         iniciarHistorico();
 
-        temaEscuro = false;
-
-        // Tema inicial: claro
         botaoTema.setText("☀ Claro");
 
         configurarAtalhos();
     }
 
-    /*
-     * =========================================
-     * INICIAR HISTÓRICO
-     * =========================================
-     */
+
+    // =========================================================
+    // INICIAR CONVERSA
+    // =========================================================
 
     private void iniciarHistorico() {
 
-        historico.clear();
+        historico = new ArrayList<>();
 
         historico.add(
                 new ChatMessage(
@@ -117,11 +122,10 @@ public class ChatController {
         ultimaRespostaIA = "";
     }
 
-    /*
-     * =========================================
-     * ATALHOS
-     * =========================================
-     */
+
+    // =========================================================
+    // ATALHOS
+    // =========================================================
 
     private void configurarAtalhos() {
 
@@ -129,7 +133,6 @@ public class ChatController {
                 KeyEvent.KEY_PRESSED,
                 evento -> {
 
-                    // Ctrl + N = Nova conversa
                     if (evento.isControlDown()
                             && evento.getCode() == KeyCode.N) {
 
@@ -140,7 +143,6 @@ public class ChatController {
                         return;
                     }
 
-                    // Ctrl + L = Limpar campo
                     if (evento.isControlDown()
                             && evento.getCode() == KeyCode.L) {
 
@@ -153,7 +155,6 @@ public class ChatController {
                         return;
                     }
 
-                    // Enter = Enviar mensagem
                     if (evento.getCode() == KeyCode.ENTER
                             && campoMensagem.isFocused()) {
 
@@ -165,11 +166,10 @@ public class ChatController {
         );
     }
 
-    /*
-     * =========================================
-     * ENVIAR MENSAGEM
-     * =========================================
-     */
+
+    // =========================================================
+    // ENVIAR MENSAGEM
+    // =========================================================
 
     @FXML
     private void enviarMensagem() {
@@ -219,11 +219,10 @@ public class ChatController {
                 );
     }
 
-    /*
-     * =========================================
-     * RECEBER RESPOSTA
-     * =========================================
-     */
+
+    // =========================================================
+    // RECEBER RESPOSTA
+    // =========================================================
 
     private void receberResposta(
             String resposta,
@@ -232,12 +231,7 @@ public class ChatController {
 
         Platform.runLater(() -> {
 
-            /*
-             * Impede resposta atrasada de aparecer
-             * em outra conversa.
-             */
             if (idDaMensagem != idConversaAtual) {
-
                 return;
             }
 
@@ -257,8 +251,8 @@ public class ChatController {
             );
 
             /*
-             * Se estamos dentro de uma conversa
-             * antiga, atualiza essa conversa salva.
+             * Se a conversa já está salva,
+             * atualiza ela.
              */
             if (conversaSalvaAtual >= 0) {
 
@@ -269,11 +263,10 @@ public class ChatController {
         });
     }
 
-    /*
-     * =========================================
-     * CRIAR BALÃO
-     * =========================================
-     */
+
+    // =========================================================
+    // ADICIONAR BALÃO
+    // =========================================================
 
     private void adicionarBalao(
             String autor,
@@ -281,15 +274,34 @@ public class ChatController {
             boolean usuario
     ) {
 
+        /*
+         * Garante que nunca vamos criar
+         * um balão com mensagem nula.
+         */
+        if (mensagem == null) {
+            mensagem = "";
+        }
+
         Label balao = new Label();
 
+        /*
+         * O texto é colocado diretamente no Label.
+         */
         balao.setText(
                 autor + ":\n" + mensagem
         );
 
         balao.setWrapText(true);
 
+        /*
+         * Permite que o balão cresça
+         * conforme a mensagem aumenta.
+         */
         balao.setMaxWidth(650);
+
+        balao.setMinHeight(
+                javafx.scene.layout.Region.USE_PREF_SIZE
+        );
 
         balao.getStyleClass().add(
                 "balao-mensagem"
@@ -301,10 +313,7 @@ public class ChatController {
                 Double.MAX_VALUE
         );
 
-        // Classe usada para organizar a linha do balão.
-        linha.getStyleClass().add(
-                "linha-balao"
-        );
+        linha.setFillHeight(true);
 
         if (usuario) {
 
@@ -331,42 +340,42 @@ public class ChatController {
 
         chatBox.getChildren().add(linha);
 
-        Platform.runLater(() ->
-                scrollChat.setVvalue(1.0)
-        );
+        /*
+         * Faz o ScrollPane ir para o final.
+         */
+        Platform.runLater(() -> {
+
+            scrollChat.layout();
+
+            scrollChat.setVvalue(1.0);
+        });
     }
 
-    /*
-     * =========================================
-     * NOVA CONVERSA
-     * =========================================
-     */
+
+    // =========================================================
+    // NOVA CONVERSA
+    // =========================================================
 
     @FXML
     private void novaConversa() {
 
         /*
-         * Primeiro invalida qualquer resposta
-         * que ainda esteja chegando da conversa anterior.
+         * Invalida respostas antigas.
          */
         idConversaAtual++;
 
         /*
-         * Se for uma conversa NOVA, salva ela.
-         *
-         * Se for uma conversa antiga que já está
-         * salva, NÃO cria outra cópia.
+         * Se estamos em uma conversa nova
+         * e ela possui mensagens, salva.
          */
-        if (conversaSalvaAtual == -1) {
+        if (conversaSalvaAtual == -1
+                && possuiMensagens()) {
 
-            if (possuiMensagens()) {
-
-                salvarConversaAtual();
-            }
+            salvarConversaAtual();
         }
 
         /*
-         * Agora realmente começa uma nova conversa.
+         * A partir daqui é uma conversa nova.
          */
         conversaSalvaAtual = -1;
 
@@ -381,11 +390,10 @@ public class ChatController {
         campoMensagem.requestFocus();
     }
 
-    /*
-     * =========================================
-     * VERIFICAR SE POSSUI MENSAGENS
-     * =========================================
-     */
+
+    // =========================================================
+    // VERIFICAR MENSAGENS
+    // =========================================================
 
     private boolean possuiMensagens() {
 
@@ -402,11 +410,10 @@ public class ChatController {
         return false;
     }
 
-    /*
-     * =========================================
-     * SALVAR CONVERSA NOVA
-     * =========================================
-     */
+
+    // =========================================================
+    // SALVAR CONVERSA
+    // =========================================================
 
     private void salvarConversaAtual() {
 
@@ -418,31 +425,17 @@ public class ChatController {
         }
 
         /*
-         * Verifica se essa conversa já existe
-         * exatamente igual no histórico.
+         * Adiciona uma única conversa.
          */
-        for (List<ChatMessage> conversa :
-                conversasSalvas) {
-
-            if (mesmasConversas(
-                    conversa,
-                    copia
-            )) {
-
-                return;
-            }
-        }
-
         conversasSalvas.add(copia);
 
         atualizarHistoricoVisual();
     }
 
-    /*
-     * =========================================
-     * ATUALIZAR CONVERSA EXISTENTE
-     * =========================================
-     */
+
+    // =========================================================
+    // ATUALIZAR CONVERSA SALVA
+    // =========================================================
 
     private void atualizarConversaSalva() {
 
@@ -461,11 +454,10 @@ public class ChatController {
         atualizarHistoricoVisual();
     }
 
-    /*
-     * =========================================
-     * COPIAR HISTÓRICO
-     * =========================================
-     */
+
+    // =========================================================
+    // COPIAR HISTÓRICO
+    // =========================================================
 
     private List<ChatMessage> copiarHistorico() {
 
@@ -486,57 +478,10 @@ public class ChatController {
         return copia;
     }
 
-    /*
-     * =========================================
-     * COMPARAR CONVERSAS
-     * =========================================
-     */
 
-    private boolean mesmasConversas(
-            List<ChatMessage> primeira,
-            List<ChatMessage> segunda
-    ) {
-
-        if (primeira.size() != segunda.size()) {
-
-            return false;
-        }
-
-        for (int i = 0;
-             i < primeira.size();
-             i++) {
-
-            ChatMessage mensagem1 =
-                    primeira.get(i);
-
-            ChatMessage mensagem2 =
-                    segunda.get(i);
-
-            if (!mensagem1.getRole()
-                    .equals(
-                            mensagem2.getRole()
-                    )) {
-
-                return false;
-            }
-
-            if (!mensagem1.getContent()
-                    .equals(
-                            mensagem2.getContent()
-                    )) {
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /*
-     * =========================================
-     * ATUALIZAR HISTÓRICO VISUAL
-     * =========================================
-     */
+    // =========================================================
+    // ATUALIZAR HISTÓRICO VISUAL
+    // =========================================================
 
     private void atualizarHistoricoVisual() {
 
@@ -548,43 +493,38 @@ public class ChatController {
 
             final int indice = i;
 
-            String titulo =
-                    criarTituloConversa(
-                            conversasSalvas.get(i)
-                    );
+            List<ChatMessage> conversa =
+                    conversasSalvas.get(i);
 
-            Label conversa =
+            String titulo =
+                    criarTituloConversa(conversa);
+
+            Label item =
                     new Label(titulo);
 
-            conversa.setMaxWidth(
+            item.setMaxWidth(
                     Double.MAX_VALUE
             );
 
-            conversa.setWrapText(true);
+            item.setWrapText(true);
 
-            conversa.getStyleClass().add(
+            item.getStyleClass().add(
                     "item-historico"
             );
 
-            /*
-             * Quando clicar, abre a conversa.
-             */
-            conversa.setOnMouseClicked(
+            item.setOnMouseClicked(
                     evento ->
                             abrirConversa(indice)
             );
 
-            historicoBox.getChildren().add(
-                    conversa
-            );
+            historicoBox.getChildren().add(item);
         }
     }
 
-    /*
-     * =========================================
-     * TÍTULO AUTOMÁTICO
-     * =========================================
-     */
+
+    // =========================================================
+    // CRIAR TÍTULO
+    // =========================================================
 
     private String criarTituloConversa(
             List<ChatMessage> conversa
@@ -597,19 +537,18 @@ public class ChatController {
                     mensagem.getRole()
             )) {
 
-                /*
-                 * Pega a primeira mensagem do usuário
-                 * e remove quebras de linha.
-                 */
                 String texto =
-                        mensagem.getContent()
-                                .trim()
-                                .replace("\n", " ")
-                                .replace("\r", " ");
+                        mensagem.getContent();
 
-                /*
-                 * Limita o tamanho do título.
-                 */
+                if (texto == null) {
+                    texto = "Nova conversa";
+                }
+
+                texto = texto
+                        .trim()
+                        .replace("\n", " ")
+                        .replace("\r", " ");
+
                 if (texto.length() > 25) {
 
                     texto =
@@ -624,11 +563,10 @@ public class ChatController {
         return "💬 Nova conversa";
     }
 
-    /*
-     * =========================================
-     * ABRIR CONVERSA ANTIGA
-     * =========================================
-     */
+
+    // =========================================================
+    // ABRIR CONVERSA
+    // =========================================================
 
     private void abrirConversa(int indice) {
 
@@ -640,28 +578,23 @@ public class ChatController {
         }
 
         /*
-         * Se estiver esperando resposta da IA,
-         * não troca de conversa.
+         * Não deixa trocar de conversa
+         * enquanto a IA está respondendo.
          */
         if (campoMensagem.isDisabled()) {
-
             return;
         }
 
-        /*
-         * Nova identificação para a conversa aberta.
-         */
         idConversaAtual++;
 
-        /*
-         * Agora sabemos qual conversa
-         * do histórico estamos visualizando.
-         */
         conversaSalvaAtual = indice;
 
         List<ChatMessage> conversaSalva =
                 conversasSalvas.get(indice);
 
+        /*
+         * Faz uma cópia real da conversa.
+         */
         historico =
                 new ArrayList<>();
 
@@ -676,36 +609,40 @@ public class ChatController {
             );
         }
 
+        /*
+         * Limpa a tela.
+         */
         chatBox.getChildren().clear();
 
         ultimaRespostaIA = "";
 
         /*
-         * Mostra novamente todas as mensagens.
+         * Recria TODOS os balões.
          */
         for (ChatMessage mensagem :
                 historico) {
 
-            if ("user".equals(
-                    mensagem.getRole()
-            )) {
+            String role =
+                    mensagem.getRole();
+
+            String content =
+                    mensagem.getContent();
+
+            if ("user".equals(role)) {
 
                 adicionarBalao(
                         "Você",
-                        mensagem.getContent(),
+                        content,
                         true
                 );
 
-            } else if ("assistant".equals(
-                    mensagem.getRole()
-            )) {
+            } else if ("assistant".equals(role)) {
 
-                ultimaRespostaIA =
-                        mensagem.getContent();
+                ultimaRespostaIA = content;
 
                 adicionarBalao(
                         "IA",
-                        mensagem.getContent(),
+                        content,
                         false
                 );
             }
@@ -716,13 +653,19 @@ public class ChatController {
         liberarInterface();
 
         campoMensagem.requestFocus();
+
+        /*
+         * Vai para o final da conversa.
+         */
+        Platform.runLater(() ->
+                scrollChat.setVvalue(1.0)
+        );
     }
 
-    /*
-     * =========================================
-     * COPIAR RESPOSTA
-     * =========================================
-     */
+
+    // =========================================================
+    // COPIAR RESPOSTA
+    // =========================================================
 
     @FXML
     private void copiarResposta() {
@@ -748,11 +691,10 @@ public class ChatController {
         );
     }
 
-    /*
-     * =========================================
-     * TEMA
-     * =========================================
-     */
+
+    // =========================================================
+    // TEMA
+    // =========================================================
 
     @FXML
     private void alternarTema() {
@@ -769,7 +711,6 @@ public class ChatController {
                 );
             }
 
-            // Tema atual: escuro
             botaoTema.setText(
                     "🌙 Escuro"
             );
@@ -780,18 +721,16 @@ public class ChatController {
                     "tema-escuro"
             );
 
-            // Tema atual: claro
             botaoTema.setText(
                     "☀ Claro"
             );
         }
     }
 
-    /*
-     * =========================================
-     * OPÇÕES
-     * =========================================
-     */
+
+    // =========================================================
+    // OPÇÕES
+    // =========================================================
 
     @FXML
     private void abrirOpcoes() {
@@ -803,11 +742,10 @@ public class ChatController {
         );
     }
 
-    /*
-     * =========================================
-     * TRATAMENTO DE ERRO
-     * =========================================
-     */
+
+    // =========================================================
+    // TRATAMENTO DE ERRO
+    // =========================================================
 
     private Void tratarErro(
             Throwable erro,
@@ -816,12 +754,7 @@ public class ChatController {
 
         Platform.runLater(() -> {
 
-            /*
-             * Não mostra erro de uma conversa
-             * antiga em outra conversa.
-             */
             if (idDaMensagem != idConversaAtual) {
-
                 return;
             }
 
@@ -856,11 +789,10 @@ public class ChatController {
         return null;
     }
 
-    /*
-     * =========================================
-     * BLOQUEAR INTERFACE
-     * =========================================
-     */
+
+    // =========================================================
+    // BLOQUEAR INTERFACE
+    // =========================================================
 
     private void bloquearInterface() {
 
@@ -871,11 +803,10 @@ public class ChatController {
         botaoNovaConversa.setDisable(true);
     }
 
-    /*
-     * =========================================
-     * LIBERAR INTERFACE
-     * =========================================
-     */
+
+    // =========================================================
+    // LIBERAR INTERFACE
+    // =========================================================
 
     private void liberarInterface() {
 
