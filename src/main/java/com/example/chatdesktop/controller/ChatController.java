@@ -14,8 +14,8 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import java.util.List;
 public class ChatController {
 
     @FXML
-    private BorderPane rootPane;
+    private StackPane rootPane;
 
     @FXML
     private VBox chatBox;
@@ -52,6 +52,10 @@ public class ChatController {
 
     @FXML
     private Button botaoOpcoes;
+
+    @FXML
+    private Label indicadorOrigem;
+
 
     private GroqService groqService;
 
@@ -99,6 +103,8 @@ public class ChatController {
 
         botaoTema.setText("☀ Claro");
 
+        indicadorOrigem.setText("");
+
         configurarAtalhos();
     }
 
@@ -120,6 +126,10 @@ public class ChatController {
         );
 
         ultimaRespostaIA = "";
+
+        if (indicadorOrigem != null) {
+            indicadorOrigem.setText("");
+        }
     }
 
 
@@ -204,9 +214,9 @@ public class ChatController {
         groqService
                 .enviarMensagem(historico)
                 .thenAccept(
-                        resposta ->
+                        resultado ->
                                 receberResposta(
-                                        resposta,
+                                        resultado,
                                         idDaMensagem
                                 )
                 )
@@ -225,7 +235,7 @@ public class ChatController {
     // =========================================================
 
     private void receberResposta(
-            String resposta,
+            GroqService.ResultadoResposta resultado,
             int idDaMensagem
     ) {
 
@@ -235,12 +245,34 @@ public class ChatController {
                 return;
             }
 
+            String resposta =
+                    resultado.getResposta();
+
+            String origem =
+                    resultado.getOrigem();
+
+            String fonte =
+                    resultado.getFonte();
+
             ultimaRespostaIA = resposta;
 
+            /*
+             * Mostra somente a resposta da IA
+             * dentro da conversa.
+             */
             adicionarBalao(
                     "IA",
                     resposta,
                     false
+            );
+
+            /*
+             * Mostra a origem e a fonte
+             * no rodapé da aplicação.
+             */
+            atualizarIndicadorOrigem(
+                    origem,
+                    fonte
             );
 
             historico.add(
@@ -261,6 +293,30 @@ public class ChatController {
 
             liberarInterface();
         });
+    }
+
+
+    // =========================================================
+    // ATUALIZAR INDICADOR DE ORIGEM
+    // =========================================================
+
+    private void atualizarIndicadorOrigem(
+            String origem,
+            String fonte
+    ) {
+
+        if (origem == null || origem.isBlank()) {
+            origem = "Desconhecida";
+        }
+
+        if (fonte == null || fonte.isBlank()) {
+            fonte = "Nenhuma";
+        }
+
+        indicadorOrigem.setText(
+                "Origem: " + origem
+                        + " • Fonte: " + fonte
+        );
     }
 
 
@@ -397,7 +453,8 @@ public class ChatController {
 
     private boolean possuiMensagens() {
 
-        for (ChatMessage mensagem : historico) {
+        for (ChatMessage mensagem :
+                historico) {
 
             if ("user".equals(
                     mensagem.getRole()
@@ -615,6 +672,13 @@ public class ChatController {
         chatBox.getChildren().clear();
 
         ultimaRespostaIA = "";
+
+        /*
+         * Limpa o indicador porque
+         * a conversa salva não guarda
+         * atualmente a origem/fonte.
+         */
+        indicadorOrigem.setText("");
 
         /*
          * Recria TODOS os balões.

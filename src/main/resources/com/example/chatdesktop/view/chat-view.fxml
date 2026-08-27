@@ -7,9 +7,11 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import com.example.chatdesktop.animacoes.ParticulasFundo?>
 
-<BorderPane
+<StackPane
         fx:id="rootPane"
         xmlns="http://javafx.com/javafx/21"
         xmlns:fx="http://javafx.com/fxml/1"
@@ -17,252 +19,251 @@
         stylesheets="@../css/chat.css"
         styleClass="root-pane">
 
-    <!-- ========================= -->
-    <!-- BARRA LATERAL -->
-    <!-- ========================= -->
+    <!-- ========================================= -->
+    <!-- FUNDO COM PARTÍCULAS -->
+    <!-- ========================================= -->
 
-    <left>
+    <ParticulasFundo
+            StackPane.alignment="CENTER"
+            mouseTransparent="true"/>
 
-        <VBox
-                prefWidth="220"
-                spacing="10"
-                styleClass="sidebar">
 
-            <padding>
-                <Insets
-                        top="25"
-                        right="15"
-                        bottom="20"
-                        left="15"/>
-            </padding>
+    <!-- ========================================= -->
+    <!-- CONTEÚDO DO CHAT -->
+    <!-- ========================================= -->
 
+    <BorderPane>
 
-            <!-- LOGO -->
+        <!-- ========================= -->
+        <!-- BARRA LATERAL -->
+        <!-- ========================= -->
 
-            <Label
-                    text="✦ Chat IA"
-                    styleClass="sidebar-titulo"/>
+        <left>
 
+            <VBox
+                    prefWidth="220"
+                    spacing="10"
+                    styleClass="sidebar">
 
-            <Label
-                    text="Seu assistente inteligente"
-                    styleClass="sidebar-subtitulo"/>
+                <padding>
+                    <Insets
+                            top="25"
+                            right="15"
+                            bottom="20"
+                            left="15"/>
+                </padding>
 
+                <Label
+                        text="✦ Chat IA"
+                        styleClass="sidebar-titulo"/>
 
-            <!-- NOVA CONVERSA -->
+                <Label
+                        text="Seu assistente inteligente"
+                        styleClass="sidebar-subtitulo"/>
 
-            <Button
-                    fx:id="botaoNovaConversa"
-                    text="＋ Nova conversa"
-                    onAction="#novaConversa"
-                    maxWidth="Infinity"
-                    styleClass="sidebar-botao-nova"/>
+                <Button
+                        fx:id="botaoNovaConversa"
+                        text="＋ Nova conversa"
+                        onAction="#novaConversa"
+                        maxWidth="Infinity"
+                        styleClass="sidebar-botao-nova"/>
 
+                <Label
+                        text="HISTÓRICO"
+                        styleClass="historico-titulo"/>
 
-            <!-- HISTÓRICO -->
+                <ScrollPane
+                        fitToWidth="true"
+                        VBox.vgrow="ALWAYS"
+                        styleClass="historico-scroll">
 
-            <Label
-                    text="HISTÓRICO"
-                    styleClass="historico-titulo"/>
+                    <content>
 
+                        <VBox
+                                fx:id="historicoBox"
+                                spacing="6"
+                                styleClass="historico-box"/>
 
-            <ScrollPane
-                    fitToWidth="true"
-                    VBox.vgrow="ALWAYS"
-                    styleClass="historico-scroll">
+                    </content>
 
-                <content>
+                </ScrollPane>
 
-                    <VBox
-                            fx:id="historicoBox"
-                            spacing="6"
-                            styleClass="historico-box">
+                <Button
+                        fx:id="botaoOpcoes"
+                        text="⚙ Opções"
+                        onAction="#abrirOpcoes"
+                        maxWidth="Infinity"
+                        styleClass="sidebar-botao-opcoes"/>
 
-                    </VBox>
+            </VBox>
 
-                </content>
+        </left>
 
-            </ScrollPane>
 
+        <!-- ========================= -->
+        <!-- ÁREA PRINCIPAL -->
+        <!-- ========================= -->
 
-            <!-- OPÇÕES -->
+        <center>
 
-            <Button
-                    fx:id="botaoOpcoes"
-                    text="⚙ Opções"
-                    onAction="#abrirOpcoes"
-                    maxWidth="Infinity"
-                    styleClass="sidebar-botao-opcoes"/>
+            <BorderPane>
 
-        </VBox>
+                <!-- ========================= -->
+                <!-- CABEÇALHO -->
+                <!-- ========================= -->
 
-    </left>
-
-
-    <!-- ========================= -->
-    <!-- ÁREA PRINCIPAL -->
-    <!-- ========================= -->
-
-    <center>
-
-        <BorderPane>
-
-            <!-- ========================= -->
-            <!-- CABEÇALHO -->
-            <!-- ========================= -->
-
-            <top>
-
-                <HBox
-                        spacing="12"
-                        alignment="CENTER_LEFT"
-                        styleClass="header">
-
-                    <padding>
-                        <Insets
-                                top="22"
-                                right="28"
-                                bottom="18"
-                                left="28"/>
-                    </padding>
-
-
-                    <!-- TÍTULO -->
-
-                    <VBox
-                            spacing="4"
-                            HBox.hgrow="ALWAYS">
-
-                        <Label
-                                text="✦ Chat IA"
-                                styleClass="titulo"/>
-
-                        <Label
-                                text="Seu assistente inteligente"
-                                styleClass="subtitulo"/>
-
-                    </VBox>
-
-
-                    <!-- COPIAR RESPOSTA -->
-
-                    <Button
-                            fx:id="botaoCopiarResposta"
-                            text="⧉ Copiar resposta"
-                            onAction="#copiarResposta"
-                            styleClass="botao-copiar-resposta"/>
-
-
-                    <!-- TEMA -->
-
-                    <Button
-                            fx:id="botaoTema"
-                            text="☀ Claro"
-                            onAction="#alternarTema"
-                            styleClass="botao-tema"/>
-
-                </HBox>
-
-            </top>
-
-
-            <!-- ========================= -->
-            <!-- ÁREA DA CONVERSA -->
-            <!-- ========================= -->
-
-            <center>
-
-                <VBox
-                        styleClass="chat-container"
-                        VBox.vgrow="ALWAYS">
-
-                    <padding>
-                        <Insets
-                                top="15"
-                                right="25"
-                                bottom="15"
-                                left="25"/>
-                    </padding>
-
-
-                    <ScrollPane
-                            fx:id="scrollChat"
-                            fitToWidth="true"
-                            fitToHeight="true"
-                            VBox.vgrow="ALWAYS"
-                            styleClass="scroll-chat">
-
-                        <content>
-
-                            <VBox
-                                    fx:id="chatBox"
-                                    spacing="12"
-                                    fillWidth="true"
-                                    styleClass="chat-box">
-
-                            </VBox>
-
-                        </content>
-
-                    </ScrollPane>
-
-                </VBox>
-
-            </center>
-
-
-            <!-- ========================= -->
-            <!-- CAMPO DE MENSAGEM -->
-            <!-- ========================= -->
-
-            <bottom>
-
-                <VBox
-                        spacing="8"
-                        styleClass="bottom-container">
-
-                    <padding>
-                        <Insets
-                                top="10"
-                                right="25"
-                                bottom="25"
-                                left="25"/>
-                    </padding>
-
+                <top>
 
                     <HBox
-                            spacing="10"
-                            styleClass="input-container">
+                            spacing="12"
+                            alignment="CENTER_LEFT"
+                            styleClass="header">
 
-                        <TextField
-                                fx:id="campoMensagem"
-                                promptText="Digite sua mensagem..."
-                                HBox.hgrow="ALWAYS"
-                                onAction="#enviarMensagem"
-                                styleClass="campo-mensagem"/>
+                        <padding>
+                            <Insets
+                                    top="22"
+                                    right="28"
+                                    bottom="18"
+                                    left="28"/>
+                        </padding>
 
+                        <VBox
+                                spacing="4"
+                                HBox.hgrow="ALWAYS">
+
+                            <Label
+                                    text="✦ Chat IA"
+                                    styleClass="titulo"/>
+
+                            <Label
+                                    text="Seu assistente inteligente"
+                                    styleClass="subtitulo"/>
+
+                        </VBox>
 
                         <Button
-                                fx:id="botaoEnviar"
-                                text="➤"
-                                prefWidth="55"
-                                prefHeight="45"
-                                onAction="#enviarMensagem"
-                                styleClass="botao-enviar"/>
+                                fx:id="botaoCopiarResposta"
+                                text="⧉ Copiar resposta"
+                                onAction="#copiarResposta"
+                                styleClass="botao-copiar-resposta"/>
+
+                        <Button
+                                fx:id="botaoTema"
+                                text="☀ Claro"
+                                onAction="#alternarTema"
+                                styleClass="botao-tema"/>
 
                     </HBox>
 
+                </top>
 
-                    <Label
-                            text="Groq • openai/gpt-oss-20b"
-                            styleClass="rodape"/>
 
-                </VBox>
+                <!-- ========================= -->
+                <!-- ÁREA DA CONVERSA -->
+                <!-- ========================= -->
 
-            </bottom>
+                <center>
 
-        </BorderPane>
+                    <VBox
+                            styleClass="chat-container"
+                            VBox.vgrow="ALWAYS">
 
-    </center>
+                        <padding>
+                            <Insets
+                                    top="15"
+                                    right="25"
+                                    bottom="15"
+                                    left="25"/>
+                        </padding>
 
-</BorderPane>
+                        <ScrollPane
+                                fx:id="scrollChat"
+                                fitToWidth="true"
+                                fitToHeight="true"
+                                VBox.vgrow="ALWAYS"
+                                styleClass="scroll-chat">
+
+                            <content>
+
+                                <VBox
+                                        fx:id="chatBox"
+                                        spacing="12"
+                                        fillWidth="true"
+                                        styleClass="chat-box"/>
+
+                            </content>
+
+                        </ScrollPane>
+
+                    </VBox>
+
+                </center>
+
+
+                <!-- ========================= -->
+                <!-- CAMPO DE MENSAGEM -->
+                <!-- ========================= -->
+
+                <bottom>
+
+                    <VBox
+                            spacing="8"
+                            styleClass="bottom-container">
+
+                        <padding>
+                            <Insets
+                                    top="10"
+                                    right="25"
+                                    bottom="25"
+                                    left="25"/>
+                        </padding>
+
+                        <HBox
+                                spacing="10"
+                                styleClass="input-container">
+
+                            <TextField
+                                    fx:id="campoMensagem"
+                                    promptText="Digite sua mensagem..."
+                                    HBox.hgrow="ALWAYS"
+                                    onAction="#enviarMensagem"
+                                    styleClass="campo-mensagem"/>
+
+                            <Button
+                                    fx:id="botaoEnviar"
+                                    text="➤"
+                                    prefWidth="55"
+                                    prefHeight="45"
+                                    onAction="#enviarMensagem"
+                                    styleClass="botao-enviar"/>
+
+                        </HBox>
+
+                        <!-- ========================= -->
+                        <!-- MODELO DA IA -->
+                        <!-- ========================= -->
+
+                        <Label
+                                text="Groq • openai/gpt-oss-20b"
+                                styleClass="rodape"/>
+
+                        <!-- ========================= -->
+                        <!-- ORIGEM DA RESPOSTA -->
+                        <!-- ========================= -->
+
+                        <Label
+                                fx:id="indicadorOrigem"
+                                text=""
+                                styleClass="indicador-origem"/>
+
+                    </VBox>
+
+                </bottom>
+
+            </BorderPane>
+
+        </center>
+
+    </BorderPane>
+
+</StackPane>
