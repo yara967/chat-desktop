@@ -6,7 +6,9 @@ import com.example.chatdesktop.service.GroqService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -20,6 +22,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ChatController {
 
@@ -76,11 +79,6 @@ public class ChatController {
 
     private boolean temaEscuro = false;
 
-    /*
-     * Controla se já existe uma regeneração em andamento.
-     * Isso evita que o primeiro clique seja perdido
-     * ou que várias requisições sejam enviadas ao mesmo tempo.
-     */
     private boolean regenerando = false;
 
 
@@ -250,59 +248,30 @@ public class ChatController {
     @FXML
     private void regenerarResposta() {
 
-        /*
-         * Se já estiver regenerando, não envia outra requisição.
-         */
         if (regenerando) {
             return;
         }
 
-        /*
-         * Não existe pergunta para regenerar.
-         */
         if (ultimaPergunta == null
                 || ultimaPergunta.isBlank()) {
 
             return;
         }
 
-        /*
-         * Não existe resposta anterior.
-         */
         if (ultimaRespostaIA == null
                 || ultimaRespostaIA.isBlank()) {
 
             return;
         }
 
-        /*
-         * Marca imediatamente como regenerando.
-         */
         regenerando = true;
 
-        /*
-         * Guarda o ID da conversa.
-         */
         int idDaMensagem =
                 idConversaAtual;
 
-        /*
-         * Cria uma cópia do histórico.
-         */
         List<ChatMessage> historicoRegeneracao =
                 copiarHistorico();
 
-        /*
-         * Remove a resposta anterior.
-         *
-         * O histórico normalmente termina assim:
-         *
-         * system
-         * user
-         * assistant
-         *
-         * Então removemos somente o assistant.
-         */
         if (!historicoRegeneracao.isEmpty()) {
 
             int ultimoIndice =
@@ -323,9 +292,6 @@ public class ChatController {
             }
         }
 
-        /*
-         * Desativa os controles enquanto a IA responde.
-         */
         botaoRegenerarResposta.setDisable(true);
 
         botaoEnviar.setDisable(true);
@@ -334,9 +300,6 @@ public class ChatController {
 
         campoMensagem.setDisable(true);
 
-        /*
-         * Envia imediatamente a requisição.
-         */
         groqService
                 .enviarMensagem(historicoRegeneracao)
                 .thenAccept(
@@ -385,10 +348,6 @@ public class ChatController {
             String fonte =
                     resultado.getFonte();
 
-            /*
-             * Se for regeneração, remove a resposta
-             * anterior da tela e do histórico.
-             */
             if (regeneracao) {
 
                 removerUltimoBalaoIA();
@@ -421,24 +380,14 @@ public class ChatController {
                 atualizarConversaSalva();
             }
 
-            /*
-             * Finaliza a regeneração.
-             */
             regenerando = false;
 
-            /*
-             * Libera a interface.
-             */
             campoMensagem.setDisable(false);
 
             botaoEnviar.setDisable(false);
 
             botaoNovaConversa.setDisable(false);
 
-            /*
-             * O botão volta a ficar disponível
-             * imediatamente após a resposta.
-             */
             botaoRegenerarResposta.setDisable(false);
 
             campoMensagem.requestFocus();
@@ -755,6 +704,19 @@ public class ChatController {
             String titulo =
                     criarTituloConversa(conversa);
 
+            HBox linhaHistorico =
+                    new HBox();
+
+            linhaHistorico.setSpacing(5);
+
+            linhaHistorico.setAlignment(
+                    Pos.CENTER_LEFT
+            );
+
+            linhaHistorico.setMaxWidth(
+                    Double.MAX_VALUE
+            );
+
             Label item =
                     new Label(titulo);
 
@@ -768,13 +730,159 @@ public class ChatController {
                     "item-historico"
             );
 
+            HBox.setHgrow(
+                    item,
+                    javafx.scene.layout.Priority.ALWAYS
+            );
+
+            Button botaoExcluir =
+                    new Button("🗑");
+
+            botaoExcluir.getStyleClass().add(
+                    "botao-excluir"
+            );
+
+            botaoExcluir.setFocusTraversable(
+                    false
+            );
+
+            botaoExcluir.setOnAction(
+                    evento ->
+                            excluirConversa(indice)
+            );
+
             item.setOnMouseClicked(
                     evento ->
                             abrirConversa(indice)
             );
 
-            historicoBox.getChildren().add(item);
+            linhaHistorico.getChildren().addAll(
+                    item,
+                    botaoExcluir
+            );
+
+            historicoBox.getChildren().add(
+                    linhaHistorico
+            );
         }
+    }
+
+
+    // =========================================================
+    // EXCLUIR CONVERSA
+    // =========================================================
+
+    private void excluirConversa(int indice) {
+
+        if (indice < 0
+                || indice >=
+                conversasSalvas.size()) {
+
+            return;
+        }
+
+        /*
+         * Pega o título da conversa
+         * para mostrar na confirmação.
+         */
+        String titulo =
+                criarTituloConversa(
+                        conversasSalvas.get(indice)
+                );
+
+        /*
+         * Cria a janela de confirmação.
+         */
+        Alert alerta =
+                new Alert(
+                        Alert.AlertType.CONFIRMATION
+                );
+
+        alerta.setTitle(
+                "Excluir conversa"
+        );
+
+        alerta.setHeaderText(
+                "Deseja excluir esta conversa?"
+        );
+
+        alerta.setContentText(
+                titulo
+                        + "\n\n"
+                        + "Essa ação não poderá ser desfeita."
+        );
+
+        /*
+         * Botões da janela.
+         */
+        ButtonType botaoCancelar =
+                new ButtonType("Cancelar");
+
+        ButtonType botaoExcluir =
+                new ButtonType("Excluir");
+
+        alerta.getButtonTypes().setAll(
+                botaoCancelar,
+                botaoExcluir
+        );
+
+        /*
+         * Mostra a janela e espera
+         * o usuário escolher uma opção.
+         */
+        Optional<ButtonType> resultado =
+                alerta.showAndWait();
+
+        /*
+         * Se não escolheu EXCLUIR,
+         * não faz absolutamente nada.
+         */
+        if (resultado.isEmpty()
+                || resultado.get() != botaoExcluir) {
+
+            return;
+        }
+
+        /*
+         * Se a conversa excluída é a conversa
+         * que está aberta atualmente,
+         * volta para uma conversa nova.
+         */
+        if (indice == conversaSalvaAtual) {
+
+            idConversaAtual++;
+
+            conversaSalvaAtual = -1;
+
+            chatBox.getChildren().clear();
+
+            iniciarHistorico();
+
+            campoMensagem.clear();
+
+            liberarInterface();
+
+            campoMensagem.requestFocus();
+        }
+
+        /*
+         * Se uma conversa anterior à atual
+         * foi excluída, ajustamos o índice.
+         */
+        else if (conversaSalvaAtual > indice) {
+
+            conversaSalvaAtual--;
+        }
+
+        /*
+         * Remove a conversa.
+         */
+        conversasSalvas.remove(indice);
+
+        /*
+         * Atualiza o histórico visual.
+         */
+        atualizarHistoricoVisual();
     }
 
 

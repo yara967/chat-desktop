@@ -2,15 +2,11 @@ package com.example.chatdesktop.service;
 
 import com.example.chatdesktop.config.GroqConfig;
 import com.example.chatdesktop.model.ChatMessage;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -18,7 +14,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -28,6 +23,43 @@ public class GroqService {
 
     private final HttpClient httpClient;
     private final Gson gson;
+
+    // =========================================================
+    // RESULTADO DA RESPOSTA
+    // =========================================================
+
+    public static class ResultadoResposta {
+
+        private final String resposta;
+        private final String origem;
+        private final String fonte;
+
+        public ResultadoResposta(
+                String resposta,
+                String origem,
+                String fonte
+        ) {
+            this.resposta = resposta;
+            this.origem = origem;
+            this.fonte = fonte;
+        }
+
+        public String getResposta() {
+            return resposta;
+        }
+
+        public String getOrigem() {
+            return origem;
+        }
+
+        public String getFonte() {
+            return fonte;
+        }
+    }
+
+    // =========================================================
+    // CONSTRUTOR
+    // =========================================================
 
     public GroqService() {
 
@@ -42,15 +74,52 @@ public class GroqService {
         gson = new Gson();
     }
 
-    public CompletableFuture<String> enviarMensagem(
+    // =========================================================
+    // ENVIAR MENSAGEM NORMAL
+    // =========================================================
+
+    public CompletableFuture<ResultadoResposta> enviarMensagem(
             List<ChatMessage> historico
+    ) {
+
+        return enviarRequisicao(
+                historico,
+                false
+        );
+    }
+
+    // =========================================================
+    // REGENERAR RESPOSTA
+    // =========================================================
+
+    public CompletableFuture<ResultadoResposta> regenerarResposta(
+            List<ChatMessage> historico
+    ) {
+
+        return enviarRequisicao(
+                historico,
+                true
+        );
+    }
+
+    // =========================================================
+    // ENVIAR REQUISIÇÃO
+    // =========================================================
+
+    private CompletableFuture<ResultadoResposta> enviarRequisicao(
+            List<ChatMessage> historico,
+            boolean regeneracao
     ) {
 
         String json;
 
         try {
 
-            json = criarJson(historico);
+            json =
+                    criarJson(
+                            historico,
+                            regeneracao
+                    );
 
         } catch (Exception erro) {
 
@@ -93,8 +162,7 @@ public class GroqService {
                             )
                             .header(
                                     "Authorization",
-                                    "Bearer "
-                                            + apiKey
+                                    "Bearer " + apiKey
                             )
                             .header(
                                     "Content-Type",
@@ -120,9 +188,7 @@ public class GroqService {
         return httpClient
                 .sendAsync(
                         request,
-                        HttpResponse
-                                .BodyHandlers
-                                .ofString()
+                        HttpResponse.BodyHandlers.ofString()
                 )
                 .thenApply(
                         this::processarResposta
@@ -172,14 +238,13 @@ public class GroqService {
                 );
     }
 
-    /*
-     * =========================================
-     * CRIAR JSON COM BASE NO DOCUMENTO
-     * =========================================
-     */
+    // =========================================================
+    // CRIAR JSON
+    // =========================================================
 
     private String criarJson(
-            List<ChatMessage> historico
+            List<ChatMessage> historico,
+            boolean regeneracao
     ) {
 
         JsonObject json =
@@ -190,14 +255,33 @@ public class GroqService {
                 GroqConfig.MODEL
         );
 
+        /*
+         * Temperatura maior na regeneração.
+         *
+         * Isso aumenta a possibilidade de a IA
+         * produzir uma resposta diferente.
+         */
+        if (regeneracao) {
+
+            json.addProperty(
+                    "temperature",
+                    0.9
+            );
+
+        } else {
+
+            json.addProperty(
+                    "temperature",
+                    0.7
+            );
+        }
+
         JsonArray mensagens =
                 new JsonArray();
 
-        /*
-         * =========================================
-         * LER DOCUMENTO
-         * =========================================
-         */
+        // =====================================================
+        // LER DOCUMENTO DO RAG
+        // =====================================================
 
         LeitorDocumento leitorDocumento =
                 new LeitorDocumento();
@@ -205,11 +289,9 @@ public class GroqService {
         String conhecimento =
                 leitorDocumento.lerDocumento();
 
-        /*
-         * =========================================
-         * INSTRUÇÃO PARA A IA
-         * =========================================
-         */
+        // =====================================================
+        // INSTRUÇÃO PARA A IA
+        // =====================================================
 
         JsonObject instrucao =
                 new JsonObject();
@@ -219,26 +301,62 @@ public class GroqService {
                 "system"
         );
 
-        instrucao.addProperty(
-                "content",
-                "Você deve responder às perguntas usando somente "
-                        + "as informações presentes no documento fornecido. "
-                        + "Não pesquise na internet e não invente informações. "
-                        + "Se a resposta não estiver no documento, diga que "
-                        + "não encontrou essa informação no documento.\n\n"
-                        + "DOCUMENTO:\n"
-                        + conhecimento
-        );
+        String textoInstrucao =
 
-        mensagens.add(instrucao);
+                "Você é um assistente inteligente e útil. "
+
+                        + "Ao responder uma pergunta, siga esta prioridade: "
+
+                        + "1. Primeiro, consulte e utilize as informações "
+                        + "presentes no DOCUMENTO fornecido. "
+
+                        + "2. Quando a informação estiver no DOCUMENTO, "
+                        + "dê preferência a ela e não a substitua por "
+                        + "informações externas ou pelo seu conhecimento geral. "
+
+                        + "3. Se a informação solicitada não estiver "
+                        + "presente no DOCUMENTO, você pode utilizar "
+                        + "seu conhecimento geral para responder. "
+
+                        + "4. Nunca invente informações. "
+
+                        + "5. Responda sempre em português do Brasil. ";
 
         /*
-         * =========================================
-         * ADICIONAR HISTÓRICO DA CONVERSA
-         * =========================================
+         * Instrução adicional somente para regeneração.
          */
+        if (regeneracao) {
 
-        for (ChatMessage mensagem : historico) {
+            textoInstrucao +=
+
+                    "\n\nEsta é uma REGENERAÇÃO da resposta anterior. "
+                            + "Responda novamente à última pergunta, "
+                            + "mas procure apresentar a resposta de uma "
+                            + "forma diferente da resposta anterior, "
+                            + "mantendo as informações corretas. "
+                            + "Não diga que está regenerando a resposta.";
+        }
+
+        textoInstrucao +=
+
+                "\n\nDOCUMENTO DO RAG:\n"
+                        + conhecimento;
+
+        instrucao.addProperty(
+                "content",
+                textoInstrucao
+        );
+
+        mensagens.add(
+                instrucao
+        );
+
+        // =====================================================
+        // ADICIONAR HISTÓRICO
+        // =====================================================
+
+        for (ChatMessage mensagem :
+                historico) {
 
             JsonObject item =
                     new JsonObject();
@@ -253,7 +371,9 @@ public class GroqService {
                     mensagem.getContent()
             );
 
-            mensagens.add(item);
+            mensagens.add(
+                    item
+            );
         }
 
         json.add(
@@ -261,16 +381,16 @@ public class GroqService {
                 mensagens
         );
 
-        return gson.toJson(json);
+        return gson.toJson(
+                json
+        );
     }
 
-    /*
-     * =========================================
-     * PROCESSAR RESPOSTA
-     * =========================================
-     */
+    // =========================================================
+    // PROCESSAR RESPOSTA
+    // =========================================================
 
-    private String processarResposta(
+    private ResultadoResposta processarResposta(
             HttpResponse<String> response
     ) {
 
@@ -309,7 +429,8 @@ public class GroqService {
             );
         }
 
-        if (status >= 500 && status <= 599) {
+        if (status >= 500
+                && status <= 599) {
 
             throw new RuntimeException(
                     "O serviço da IA está temporariamente indisponível. "
@@ -347,12 +468,55 @@ public class GroqService {
                 );
             }
 
-            return choices
-                    .get(0)
-                    .getAsJsonObject()
-                    .getAsJsonObject("message")
-                    .get("content")
-                    .getAsString();
+            String resposta =
+                    choices
+                            .get(0)
+                            .getAsJsonObject()
+                            .getAsJsonObject(
+                                    "message"
+                            )
+                            .get(
+                                    "content"
+                            )
+                            .getAsString();
+
+            // =================================================
+            // DEFINIR ORIGEM E FONTE
+            // =================================================
+
+            LeitorDocumento leitorDocumento =
+                    new LeitorDocumento();
+
+            boolean documentoExiste =
+                    leitorDocumento.documentoExiste();
+
+            String origem;
+
+            String fonte;
+
+            if (documentoExiste) {
+
+                origem =
+                        "RAG";
+
+                fonte =
+                        leitorDocumento
+                                .getNomeFonte();
+
+            } else {
+
+                origem =
+                        "Fallback local";
+
+                fonte =
+                        "Nenhuma";
+            }
+
+            return new ResultadoResposta(
+                    resposta,
+                    origem,
+                    fonte
+            );
 
         } catch (RuntimeException erro) {
 
@@ -367,11 +531,9 @@ public class GroqService {
         }
     }
 
-    /*
-     * =========================================
-     * OBTER CAUSA REAL DO ERRO
-     * =========================================
-     */
+    // =========================================================
+    // OBTER CAUSA REAL DO ERRO
+    // =========================================================
 
     private Throwable obterCausa(
             Throwable erro
