@@ -141,11 +141,33 @@
 
                         </VBox>
 
+
+                        <!-- ========================= -->
+                        <!-- REGENERAR RESPOSTA -->
+                        <!-- ========================= -->
+
+                        <Button
+                                fx:id="botaoRegenerarResposta"
+                                text="↻ Regenerar resposta"
+                                onAction="#regenerarResposta"
+                                styleClass="botao-copiar-resposta"
+                                disable="true"/>
+
+
+                        <!-- ========================= -->
+                        <!-- COPIAR RESPOSTA -->
+                        <!-- ========================= -->
+
                         <Button
                                 fx:id="botaoCopiarResposta"
                                 text="⧉ Copiar resposta"
                                 onAction="#copiarResposta"
                                 styleClass="botao-copiar-resposta"/>
+
+
+                        <!-- ========================= -->
+                        <!-- TEMA -->
+                        <!-- ========================= -->
 
                         <Button
                                 fx:id="botaoTema"
@@ -239,6 +261,7 @@
 
                         </HBox>
 
+
                         <!-- ========================= -->
                         <!-- MODELO DA IA -->
                         <!-- ========================= -->
@@ -246,6 +269,7 @@
                         <Label
                                 text="Groq • openai/gpt-oss-20b"
                                 styleClass="rodape"/>
+
 
                         <!-- ========================= -->
                         <!-- ORIGEM DA RESPOSTA -->

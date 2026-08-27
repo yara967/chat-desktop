@@ -45,6 +45,9 @@ public class ChatController {
     private Button botaoCopiarResposta;
 
     @FXML
+    private Button botaoRegenerarResposta;
+
+    @FXML
     private Button botaoTema;
 
     @FXML
@@ -56,36 +59,29 @@ public class ChatController {
     @FXML
     private Label indicadorOrigem;
 
-
     private GroqService groqService;
 
-    /*
-     * Conversa que está sendo exibida atualmente.
-     */
     private List<ChatMessage> historico;
 
-    /*
-     * Todas as conversas salvas no histórico.
-     */
     private final List<List<ChatMessage>> conversasSalvas =
             new ArrayList<>();
 
-    /*
-     * Índice da conversa aberta.
-     *
-     * -1 = conversa nova ainda não salva.
-     */
     private int conversaSalvaAtual = -1;
 
-    /*
-     * Número que identifica a conversa atual.
-     * Serve para impedir respostas atrasadas.
-     */
     private int idConversaAtual = 0;
 
     private String ultimaRespostaIA = "";
 
+    private String ultimaPergunta = "";
+
     private boolean temaEscuro = false;
+
+    /*
+     * Controla se já existe uma regeneração em andamento.
+     * Isso evita que o primeiro clique seja perdido
+     * ou que várias requisições sejam enviadas ao mesmo tempo.
+     */
+    private boolean regenerando = false;
 
 
     // =========================================================
@@ -105,6 +101,8 @@ public class ChatController {
 
         indicadorOrigem.setText("");
 
+        botaoRegenerarResposta.setDisable(true);
+
         configurarAtalhos();
     }
 
@@ -120,15 +118,23 @@ public class ChatController {
         historico.add(
                 new ChatMessage(
                         "system",
-                        "Você é um assistente útil, educado e objetivo. " +
-                                "Responda sempre em português do Brasil."
+                        "Você é um assistente útil, educado e objetivo. "
+                                + "Responda sempre em português do Brasil."
                 )
         );
 
         ultimaRespostaIA = "";
 
+        ultimaPergunta = "";
+
+        regenerando = false;
+
         if (indicadorOrigem != null) {
             indicadorOrigem.setText("");
+        }
+
+        if (botaoRegenerarResposta != null) {
+            botaoRegenerarResposta.setDisable(true);
         }
     }
 
@@ -191,10 +197,16 @@ public class ChatController {
             return;
         }
 
+        if (regenerando) {
+            return;
+        }
+
         int idDaMensagem =
                 idConversaAtual;
 
         campoMensagem.clear();
+
+        ultimaPergunta = mensagem;
 
         adicionarBalao(
                 "Você",
@@ -217,7 +229,122 @@ public class ChatController {
                         resultado ->
                                 receberResposta(
                                         resultado,
+                                        idDaMensagem,
+                                        false
+                                )
+                )
+                .exceptionally(
+                        erro ->
+                                tratarErro(
+                                        erro,
                                         idDaMensagem
+                                )
+                );
+    }
+
+
+    // =========================================================
+    // REGENERAR RESPOSTA
+    // =========================================================
+
+    @FXML
+    private void regenerarResposta() {
+
+        /*
+         * Se já estiver regenerando, não envia outra requisição.
+         */
+        if (regenerando) {
+            return;
+        }
+
+        /*
+         * Não existe pergunta para regenerar.
+         */
+        if (ultimaPergunta == null
+                || ultimaPergunta.isBlank()) {
+
+            return;
+        }
+
+        /*
+         * Não existe resposta anterior.
+         */
+        if (ultimaRespostaIA == null
+                || ultimaRespostaIA.isBlank()) {
+
+            return;
+        }
+
+        /*
+         * Marca imediatamente como regenerando.
+         */
+        regenerando = true;
+
+        /*
+         * Guarda o ID da conversa.
+         */
+        int idDaMensagem =
+                idConversaAtual;
+
+        /*
+         * Cria uma cópia do histórico.
+         */
+        List<ChatMessage> historicoRegeneracao =
+                copiarHistorico();
+
+        /*
+         * Remove a resposta anterior.
+         *
+         * O histórico normalmente termina assim:
+         *
+         * system
+         * user
+         * assistant
+         *
+         * Então removemos somente o assistant.
+         */
+        if (!historicoRegeneracao.isEmpty()) {
+
+            int ultimoIndice =
+                    historicoRegeneracao.size() - 1;
+
+            ChatMessage ultimaMensagem =
+                    historicoRegeneracao.get(
+                            ultimoIndice
+                    );
+
+            if ("assistant".equals(
+                    ultimaMensagem.getRole()
+            )) {
+
+                historicoRegeneracao.remove(
+                        ultimoIndice
+                );
+            }
+        }
+
+        /*
+         * Desativa os controles enquanto a IA responde.
+         */
+        botaoRegenerarResposta.setDisable(true);
+
+        botaoEnviar.setDisable(true);
+
+        botaoNovaConversa.setDisable(true);
+
+        campoMensagem.setDisable(true);
+
+        /*
+         * Envia imediatamente a requisição.
+         */
+        groqService
+                .enviarMensagem(historicoRegeneracao)
+                .thenAccept(
+                        resultado ->
+                                receberResposta(
+                                        resultado,
+                                        idDaMensagem,
+                                        true
                                 )
                 )
                 .exceptionally(
@@ -236,12 +363,16 @@ public class ChatController {
 
     private void receberResposta(
             GroqService.ResultadoResposta resultado,
-            int idDaMensagem
+            int idDaMensagem,
+            boolean regeneracao
     ) {
 
         Platform.runLater(() -> {
 
             if (idDaMensagem != idConversaAtual) {
+
+                regenerando = false;
+
                 return;
             }
 
@@ -254,22 +385,25 @@ public class ChatController {
             String fonte =
                     resultado.getFonte();
 
+            /*
+             * Se for regeneração, remove a resposta
+             * anterior da tela e do histórico.
+             */
+            if (regeneracao) {
+
+                removerUltimoBalaoIA();
+
+                removerUltimaRespostaDoHistorico();
+            }
+
             ultimaRespostaIA = resposta;
 
-            /*
-             * Mostra somente a resposta da IA
-             * dentro da conversa.
-             */
             adicionarBalao(
                     "IA",
                     resposta,
                     false
             );
 
-            /*
-             * Mostra a origem e a fonte
-             * no rodapé da aplicação.
-             */
             atualizarIndicadorOrigem(
                     origem,
                     fonte
@@ -282,17 +416,107 @@ public class ChatController {
                     )
             );
 
-            /*
-             * Se a conversa já está salva,
-             * atualiza ela.
-             */
             if (conversaSalvaAtual >= 0) {
 
                 atualizarConversaSalva();
             }
 
-            liberarInterface();
+            /*
+             * Finaliza a regeneração.
+             */
+            regenerando = false;
+
+            /*
+             * Libera a interface.
+             */
+            campoMensagem.setDisable(false);
+
+            botaoEnviar.setDisable(false);
+
+            botaoNovaConversa.setDisable(false);
+
+            /*
+             * O botão volta a ficar disponível
+             * imediatamente após a resposta.
+             */
+            botaoRegenerarResposta.setDisable(false);
+
+            campoMensagem.requestFocus();
         });
+    }
+
+
+    // =========================================================
+    // REMOVER ÚLTIMA RESPOSTA DO HISTÓRICO
+    // =========================================================
+
+    private void removerUltimaRespostaDoHistorico() {
+
+        if (historico.isEmpty()) {
+            return;
+        }
+
+        ChatMessage ultimaMensagem =
+                historico.get(
+                        historico.size() - 1
+                );
+
+        if ("assistant".equals(
+                ultimaMensagem.getRole()
+        )) {
+
+            historico.remove(
+                    historico.size() - 1
+            );
+        }
+    }
+
+
+    // =========================================================
+    // REMOVER ÚLTIMO BALÃO DA IA
+    // =========================================================
+
+    private void removerUltimoBalaoIA() {
+
+        if (chatBox.getChildren().isEmpty()) {
+            return;
+        }
+
+        for (int i =
+             chatBox.getChildren().size() - 1;
+             i >= 0;
+             i--) {
+
+            if (chatBox.getChildren().get(i)
+                    instanceof HBox) {
+
+                HBox linha =
+                        (HBox) chatBox
+                                .getChildren()
+                                .get(i);
+
+                if (!linha.getChildren().isEmpty()
+                        && linha.getChildren().get(0)
+                        instanceof Label) {
+
+                    Label balao =
+                            (Label) linha
+                                    .getChildren()
+                                    .get(0);
+
+                    String texto =
+                            balao.getText();
+
+                    if (texto != null
+                            && texto.startsWith("IA:")) {
+
+                        chatBox.getChildren().remove(i);
+
+                        break;
+                    }
+                }
+            }
+        }
     }
 
 
@@ -330,29 +554,18 @@ public class ChatController {
             boolean usuario
     ) {
 
-        /*
-         * Garante que nunca vamos criar
-         * um balão com mensagem nula.
-         */
         if (mensagem == null) {
             mensagem = "";
         }
 
         Label balao = new Label();
 
-        /*
-         * O texto é colocado diretamente no Label.
-         */
         balao.setText(
                 autor + ":\n" + mensagem
         );
 
         balao.setWrapText(true);
 
-        /*
-         * Permite que o balão cresça
-         * conforme a mensagem aumenta.
-         */
         balao.setMaxWidth(650);
 
         balao.setMinHeight(
@@ -396,9 +609,6 @@ public class ChatController {
 
         chatBox.getChildren().add(linha);
 
-        /*
-         * Faz o ScrollPane ir para o final.
-         */
         Platform.runLater(() -> {
 
             scrollChat.layout();
@@ -415,24 +625,16 @@ public class ChatController {
     @FXML
     private void novaConversa() {
 
-        /*
-         * Invalida respostas antigas.
-         */
         idConversaAtual++;
 
-        /*
-         * Se estamos em uma conversa nova
-         * e ela possui mensagens, salva.
-         */
+        regenerando = false;
+
         if (conversaSalvaAtual == -1
                 && possuiMensagens()) {
 
             salvarConversaAtual();
         }
 
-        /*
-         * A partir daqui é uma conversa nova.
-         */
         conversaSalvaAtual = -1;
 
         chatBox.getChildren().clear();
@@ -481,9 +683,6 @@ public class ChatController {
             return;
         }
 
-        /*
-         * Adiciona uma única conversa.
-         */
         conversasSalvas.add(copia);
 
         atualizarHistoricoVisual();
@@ -634,10 +833,6 @@ public class ChatController {
             return;
         }
 
-        /*
-         * Não deixa trocar de conversa
-         * enquanto a IA está respondendo.
-         */
         if (campoMensagem.isDisabled()) {
             return;
         }
@@ -649,9 +844,6 @@ public class ChatController {
         List<ChatMessage> conversaSalva =
                 conversasSalvas.get(indice);
 
-        /*
-         * Faz uma cópia real da conversa.
-         */
         historico =
                 new ArrayList<>();
 
@@ -666,23 +858,18 @@ public class ChatController {
             );
         }
 
-        /*
-         * Limpa a tela.
-         */
         chatBox.getChildren().clear();
 
         ultimaRespostaIA = "";
 
-        /*
-         * Limpa o indicador porque
-         * a conversa salva não guarda
-         * atualmente a origem/fonte.
-         */
+        ultimaPergunta = "";
+
+        regenerando = false;
+
         indicadorOrigem.setText("");
 
-        /*
-         * Recria TODOS os balões.
-         */
+        botaoRegenerarResposta.setDisable(true);
+
         for (ChatMessage mensagem :
                 historico) {
 
@@ -693,6 +880,8 @@ public class ChatController {
                     mensagem.getContent();
 
             if ("user".equals(role)) {
+
+                ultimaPergunta = content;
 
                 adicionarBalao(
                         "Você",
@@ -712,15 +901,18 @@ public class ChatController {
             }
         }
 
+        if (!ultimaPergunta.isBlank()
+                && !ultimaRespostaIA.isBlank()) {
+
+            botaoRegenerarResposta.setDisable(false);
+        }
+
         campoMensagem.clear();
 
         liberarInterface();
 
         campoMensagem.requestFocus();
 
-        /*
-         * Vai para o final da conversa.
-         */
         Platform.runLater(() ->
                 scrollChat.setVvalue(1.0)
         );
@@ -822,6 +1014,8 @@ public class ChatController {
                 return;
             }
 
+            regenerando = false;
+
             String mensagemErro;
 
             if (erro.getCause() != null
@@ -865,6 +1059,8 @@ public class ChatController {
         botaoEnviar.setDisable(true);
 
         botaoNovaConversa.setDisable(true);
+
+        botaoRegenerarResposta.setDisable(true);
     }
 
 
@@ -881,5 +1077,12 @@ public class ChatController {
         botaoNovaConversa.setDisable(false);
 
         campoMensagem.requestFocus();
+
+        if (!regenerando
+                && ultimaRespostaIA != null
+                && !ultimaRespostaIA.isBlank()) {
+
+            botaoRegenerarResposta.setDisable(false);
+        }
     }
 }

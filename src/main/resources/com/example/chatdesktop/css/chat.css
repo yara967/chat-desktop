@@ -546,3 +546,37 @@
     -fx-text-fill: #806b99;
     -fx-alignment: center;
 }
+
+.botao-regenerar-resposta {
+    -fx-background-color: #f0e6ff;
+    -fx-text-fill: #4f2878;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #d8c2f0;
+    -fx-border-width: 1px;
+    -fx-padding: 9px 14px;
+    -fx-cursor: hand;
+}
+
+.botao-regenerar-resposta {
+    -fx-background-color: #f0e6ff;
+    -fx-text-fill: #4f2878;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #d8c2f0;
+    -fx-border-width: 1px;
+    -fx-padding: 9px 14px;
+    -fx-cursor: hand;
+}
+
+.botao-regenerar-resposta:hover {
+    -fx-background-color: #e5d5fa;
+}
+
+.botao-regenerar-resposta:disabled {
+    -fx-opacity: 0.5;
+}
