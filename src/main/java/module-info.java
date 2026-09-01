@@ -2,11 +2,16 @@ module com.example.chatdesktop {
 
     requires javafx.controls;
     requires javafx.fxml;
-    requires java.net.http;
+
     requires com.google.gson;
+    requires java.net.http;
+    requires java.prefs;
+
+    opens com.example.chatdesktop.controller to javafx.fxml;
+    opens com.example.chatdesktop.model to com.google.gson;
 
     exports com.example.chatdesktop;
-
-    opens com.example.chatdesktop.controller
-            to javafx.fxml;
+    exports com.example.chatdesktop.animacoes;
+    exports com.example.chatdesktop.service;
+    exports com.example.chatdesktop.config;
 }
