@@ -1,9 +1,10 @@
 package com.example.chatdesktop.controller;
 
-import com.example.chatdesktop.model.ChatMessage;
-import com.example.chatdesktop.service.GroqService;
 import com.example.chatdesktop.animacoes.AnimacoesChat;
 import com.example.chatdesktop.animacoes.ParticulasFundo;
+import com.example.chatdesktop.model.ChatMessage;
+import com.example.chatdesktop.persistence.ConversaDAO;
+import com.example.chatdesktop.service.GroqService;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -15,7 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.util.Duration;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
@@ -23,10 +24,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.effect.DropShadow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +84,14 @@ public class ChatController {
     private final List<String> nomesConversas =
             new ArrayList<>();
 
+    /*
+     * Guarda o ID real de cada conversa no banco.
+     * O índice dessa lista corresponde ao índice
+     * de conversasSalvas.
+     */
+    private final List<Integer> idsConversas =
+            new ArrayList<>();
+
     private int conversaSalvaAtual = -1;
 
     private int idConversaAtual = 0;
@@ -100,7 +109,7 @@ public class ChatController {
 
 
     // =========================================================
-    // TOOLTIP RÁPIDA (aparece quase na hora, sem esperar 1 segundo)
+    // TOOLTIP
     // =========================================================
 
     private Tooltip criarTooltipRapida(String texto) {
@@ -108,7 +117,6 @@ public class ChatController {
         Tooltip dica = new Tooltip(texto);
 
         dica.setShowDelay(Duration.millis(150));
-
         dica.setHideDelay(Duration.millis(100));
 
         return dica;
@@ -129,13 +137,19 @@ public class ChatController {
         iniciarHistorico();
 
         botaoTema.setText("☀");
-        botaoTema.setTooltip(criarTooltipRapida("Deseja mudar o tema?"));
+        botaoTema.setTooltip(
+                criarTooltipRapida("Deseja mudar o tema?")
+        );
 
         botaoCopiarResposta.setText("⧉");
-        botaoCopiarResposta.setTooltip(criarTooltipRapida("Copiar resposta"));
+        botaoCopiarResposta.setTooltip(
+                criarTooltipRapida("Copiar resposta")
+        );
 
         botaoRegenerarResposta.setText("⟳");
-        botaoRegenerarResposta.setTooltip(criarTooltipRapida("Regenerar resposta"));
+        botaoRegenerarResposta.setTooltip(
+                criarTooltipRapida("Regenerar resposta")
+        );
 
         indicadorOrigem.setText("");
 
@@ -147,6 +161,8 @@ public class ChatController {
             particulasFundo.aplicarTemaClaro();
         }
 
+        carregarConversasDoBanco();
+
         mostrarEstadoVazioSeNecessario();
 
         boolean temaSalvoEscuro =
@@ -154,6 +170,73 @@ public class ChatController {
 
         if (temaSalvoEscuro) {
             alternarTema();
+        }
+    }
+
+
+    // =========================================================
+    // CARREGAR CONVERSAS DO BANCO
+    // =========================================================
+
+    private void carregarConversasDoBanco() {
+
+        try {
+
+            /*
+             * Limpa as listas antes de carregar.
+             * Isso evita duplicação caso o método seja chamado novamente.
+             */
+            conversasSalvas.clear();
+            nomesConversas.clear();
+            idsConversas.clear();
+
+            List<Integer> ids =
+                    ConversaDAO.listarIds();
+
+            List<String> titulos =
+                    ConversaDAO.listarTitulos();
+
+            for (int i = 0; i < ids.size(); i++) {
+
+                int id = ids.get(i);
+
+                List<ChatMessage> mensagens =
+                        ConversaDAO.buscarMensagens(id);
+
+                if (!mensagens.isEmpty()) {
+
+                    conversasSalvas.add(
+                            new ArrayList<>(mensagens)
+                    );
+
+                    idsConversas.add(id);
+
+                    if (i < titulos.size()
+                            && titulos.get(i) != null
+                            && !titulos.get(i).isBlank()) {
+
+                        nomesConversas.add(
+                                titulos.get(i)
+                        );
+
+                    } else {
+
+                        nomesConversas.add(
+                                criarTituloConversa(mensagens)
+                                        .replace("💬 ", "")
+                        );
+                    }
+                }
+            }
+
+            atualizarHistoricoVisual();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Erro ao carregar histórico: "
+                            + e.getMessage()
+            );
         }
     }
 
@@ -175,9 +258,7 @@ public class ChatController {
         );
 
         ultimaRespostaIA = "";
-
         ultimaPergunta = "";
-
         regenerando = false;
 
         if (indicadorOrigem != null) {
@@ -252,7 +333,7 @@ public class ChatController {
             return;
         }
 
-        int idDaMensagem =
+        final int idDaMensagem =
                 idConversaAtual;
 
         campoMensagem.clear();
@@ -295,7 +376,7 @@ public class ChatController {
 
 
     // =========================================================
-    // REGENERAR RESPOSTA
+    // REGENERAR
     // =========================================================
 
     @FXML
@@ -319,7 +400,7 @@ public class ChatController {
 
         regenerando = true;
 
-        int idDaMensagem =
+        final int idDaMensagem =
                 idConversaAtual;
 
         List<ChatMessage> historicoRegeneracao =
@@ -346,11 +427,8 @@ public class ChatController {
         }
 
         botaoRegenerarResposta.setDisable(true);
-
         botaoEnviar.setDisable(true);
-
         botaoNovaConversa.setDisable(true);
-
         campoMensagem.setDisable(true);
 
         groqService
@@ -428,6 +506,8 @@ public class ChatController {
                     )
             );
 
+            salvarOuAtualizarNoBanco();
+
             if (conversaSalvaAtual >= 0) {
 
                 atualizarConversaSalva();
@@ -436,9 +516,7 @@ public class ChatController {
             regenerando = false;
 
             campoMensagem.setDisable(false);
-
             botaoEnviar.setDisable(false);
-
             botaoNovaConversa.setDisable(false);
 
             botaoRegenerarResposta.setDisable(false);
@@ -449,7 +527,159 @@ public class ChatController {
 
 
     // =========================================================
-    // REMOVER ÚLTIMA RESPOSTA DO HISTÓRICO
+    // SALVAR OU ATUALIZAR BANCO
+    // =========================================================
+
+    private void salvarOuAtualizarNoBanco() {
+
+        try {
+
+            List<ChatMessage> mensagens =
+                    copiarHistorico();
+
+            if (!possuiMensagens()) {
+                return;
+            }
+
+            String titulo =
+                    criarTituloConversa(mensagens)
+                            .replace("💬 ", "");
+
+            /*
+             * Se ainda não existe no banco,
+             * cria uma nova conversa.
+             */
+            if (conversaSalvaAtual == -1) {
+
+                int novoId =
+                        ConversaDAO.criarConversa(titulo);
+
+                if (novoId != -1) {
+
+                    idConversaAtual = novoId;
+
+                    for (ChatMessage mensagem :
+                            mensagens) {
+
+                        if (!"system".equals(
+                                mensagem.getRole()
+                        )) {
+
+                            ConversaDAO.salvarMensagem(
+                                    novoId,
+                                    mensagem
+                            );
+                        }
+                    }
+
+                    conversasSalvas.add(
+                            copiarHistorico()
+                    );
+
+                    nomesConversas.add(
+                            titulo
+                    );
+
+                    idsConversas.add(
+                            novoId
+                    );
+
+                    conversaSalvaAtual =
+                            conversasSalvas.size() - 1;
+
+                    atualizarHistoricoVisual();
+                }
+
+            } else {
+
+                /*
+                 * A conversa já existe.
+                 *
+                 * Atualizamos o conteúdo dela no banco.
+                 */
+                if (conversaSalvaAtual <
+                        conversasSalvas.size()
+                        && conversaSalvaAtual <
+                        idsConversas.size()) {
+
+                    int idBanco =
+                            idsConversas.get(
+                                    conversaSalvaAtual
+                            );
+
+                    atualizarMensagensNoBanco(
+                            idBanco,
+                            mensagens
+                    );
+
+                    ConversaDAO.atualizarTitulo(
+                            idBanco,
+                            titulo
+                    );
+
+                    if (conversaSalvaAtual <
+                            nomesConversas.size()) {
+
+                        nomesConversas.set(
+                                conversaSalvaAtual,
+                                titulo
+                        );
+                    }
+
+                    conversasSalvas.set(
+                            conversaSalvaAtual,
+                            copiarHistorico()
+                    );
+
+                    atualizarHistoricoVisual();
+                }
+            }
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Erro ao salvar conversa: "
+                            + e.getMessage()
+            );
+        }
+    }
+
+
+    // =========================================================
+    // ATUALIZAR MENSAGENS NO BANCO
+    // =========================================================
+
+    private void atualizarMensagensNoBanco(
+            int conversaId,
+            List<ChatMessage> mensagens
+    ) {
+
+        /*
+         * Como o DAO atual não possui um método para
+         * atualizar todas as mensagens, removemos as
+         * mensagens antigas e salvamos novamente.
+         */
+
+        ConversaDAO.excluirMensagens(conversaId);
+
+        for (ChatMessage mensagem :
+                mensagens) {
+
+            if (!"system".equals(
+                    mensagem.getRole()
+            )) {
+
+                ConversaDAO.salvarMensagem(
+                        conversaId,
+                        mensagem
+                );
+            }
+        }
+    }
+
+
+    // =========================================================
+    // REMOVER ÚLTIMA RESPOSTA
     // =========================================================
 
     private void removerUltimaRespostaDoHistorico() {
@@ -475,7 +705,7 @@ public class ChatController {
 
 
     // =========================================================
-    // REMOVER ÚLTIMO BALÃO DA IA
+    // REMOVER BALÃO IA
     // =========================================================
 
     private void removerUltimoBalaoIA() {
@@ -547,7 +777,7 @@ public class ChatController {
 
 
     // =========================================================
-    // ESTADO VAZIO (boas-vindas)
+    // ESTADO VAZIO
     // =========================================================
 
     private void mostrarEstadoVazioSeNecessario() {
@@ -556,34 +786,45 @@ public class ChatController {
             return;
         }
 
-        VBox estadoVazio = new VBox(10);
+        VBox estadoVazio =
+                new VBox(10);
 
-        estadoVazio.setId("estado-vazio");
+        estadoVazio.setId(
+                "estado-vazio"
+        );
 
         estadoVazio.getStyleClass().add(
                 "estado-vazio-container"
         );
 
-        estadoVazio.setAlignment(Pos.CENTER);
+        estadoVazio.setAlignment(
+                Pos.CENTER
+        );
 
-        estadoVazio.setMaxWidth(Double.MAX_VALUE);
+        estadoVazio.setMaxWidth(
+                Double.MAX_VALUE
+        );
 
-        estadoVazio.setMaxHeight(Double.MAX_VALUE);
+        estadoVazio.setMaxHeight(
+                Double.MAX_VALUE
+        );
 
         VBox.setVgrow(
                 estadoVazio,
                 javafx.scene.layout.Priority.ALWAYS
         );
 
-        Label icone = new Label("✦");
+        Label icone =
+                new Label("✦");
 
         icone.getStyleClass().add(
                 "estado-vazio-icone"
         );
 
-        Label texto = new Label(
-                "Oi! Sobre o que vamos conversar hoje?"
-        );
+        Label texto =
+                new Label(
+                        "Oi! Sobre o que vamos conversar hoje?"
+                );
 
         texto.getStyleClass().add(
                 "estado-vazio-texto"
@@ -602,16 +843,23 @@ public class ChatController {
                 texto
         );
 
-        chatBox.getChildren().add(estadoVazio);
+        chatBox.getChildren().add(
+                estadoVazio
+        );
 
-        AnimacoesChat.entradaMensagem(estadoVazio);
+        AnimacoesChat.entradaMensagem(
+                estadoVazio
+        );
     }
 
 
     private void removerEstadoVazioSeExistir() {
 
         chatBox.getChildren().removeIf(
-                no -> "estado-vazio".equals(no.getId())
+                no ->
+                        "estado-vazio".equals(
+                                no.getId()
+                        )
         );
     }
 
@@ -632,7 +880,8 @@ public class ChatController {
             mensagem = "";
         }
 
-        Label balao = new Label();
+        Label balao =
+                new Label();
 
         balao.setText(
                 autor + ":\n" + mensagem
@@ -650,7 +899,8 @@ public class ChatController {
                 "balao-mensagem"
         );
 
-        HBox linha = new HBox();
+        HBox linha =
+                new HBox();
 
         linha.setMaxWidth(
                 Double.MAX_VALUE
@@ -679,11 +929,17 @@ public class ChatController {
             );
         }
 
-        linha.getChildren().add(balao);
+        linha.getChildren().add(
+                balao
+        );
 
-        chatBox.getChildren().add(linha);
+        chatBox.getChildren().add(
+                linha
+        );
 
-        AnimacoesChat.entradaMensagem(linha);
+        AnimacoesChat.entradaMensagem(
+                linha
+        );
 
         Platform.runLater(() -> {
 
@@ -701,17 +957,24 @@ public class ChatController {
     @FXML
     private void novaConversa() {
 
-        idConversaAtual++;
-
-        regenerando = false;
-
-        if (conversaSalvaAtual == -1
-                && possuiMensagens()) {
+        /*
+         * A conversa já é salva automaticamente quando
+         * a IA responde.
+         *
+         * Se por algum motivo ainda não estiver salva,
+         * salvamos antes de criar a nova.
+         */
+        if (possuiMensagens()
+                && conversaSalvaAtual == -1) {
 
             salvarConversaAtual();
         }
 
+        idConversaAtual++;
+
         conversaSalvaAtual = -1;
+
+        regenerando = false;
 
         chatBox.getChildren().clear();
 
@@ -728,7 +991,7 @@ public class ChatController {
 
 
     // =========================================================
-    // VERIFICAR MENSAGENS
+    // POSSUI MENSAGENS
     // =========================================================
 
     private boolean possuiMensagens() {
@@ -757,16 +1020,47 @@ public class ChatController {
         List<ChatMessage> copia =
                 copiarHistorico();
 
-        if (copia.isEmpty()) {
+        if (copia.isEmpty()
+                || !possuiMensagens()) {
+
             return;
+        }
+
+        String titulo =
+                criarTituloConversa(copia)
+                        .replace("💬 ", "");
+
+        int idBanco =
+                ConversaDAO.criarConversa(titulo);
+
+        if (idBanco == -1) {
+            return;
+        }
+
+        for (ChatMessage mensagem :
+                copia) {
+
+            if (!"system".equals(
+                    mensagem.getRole()
+            )) {
+
+                ConversaDAO.salvarMensagem(
+                        idBanco,
+                        mensagem
+                );
+            }
         }
 
         conversasSalvas.add(copia);
 
-        nomesConversas.add(
-                criarTituloConversa(copia)
-                        .replace("💬 ", "")
-        );
+        nomesConversas.add(titulo);
+
+        idsConversas.add(idBanco);
+
+        conversaSalvaAtual =
+                conversasSalvas.size() - 1;
+
+        idConversaAtual = idBanco;
 
         atualizarHistoricoVisual();
     }
@@ -848,7 +1142,9 @@ public class ChatController {
             } else {
 
                 titulo =
-                        criarTituloConversa(conversa);
+                        criarTituloConversa(
+                                conversa
+                        );
             }
 
             HBox linhaHistorico =
@@ -882,11 +1178,6 @@ public class ChatController {
                     javafx.scene.layout.Priority.ALWAYS
             );
 
-
-            // =================================================
-            // BOTÃO RENOMEAR
-            // =================================================
-
             Button botaoRenomear =
                     new Button("✏");
 
@@ -900,11 +1191,6 @@ public class ChatController {
                     evento ->
                             renomearConversa(indice)
             );
-
-
-            // =================================================
-            // BOTÃO EXCLUIR
-            // =================================================
 
             Button botaoExcluir =
                     new Button("🗑");
@@ -920,16 +1206,10 @@ public class ChatController {
                             excluirConversa(indice)
             );
 
-
-            // =================================================
-            // ABRIR CONVERSA
-            // =================================================
-
             item.setOnMouseClicked(
                     evento ->
                             abrirConversa(indice)
             );
-
 
             linhaHistorico.getChildren().addAll(
                     item,
@@ -945,7 +1225,7 @@ public class ChatController {
 
 
     // =========================================================
-    // RENOMEAR CONVERSA
+    // RENOMEAR
     // =========================================================
 
     private void renomearConversa(int indice) {
@@ -981,7 +1261,7 @@ public class ChatController {
 
 
     // =========================================================
-    // JANELA BONITA DE RENOMEAR
+    // JANELA RENOMEAR
     // =========================================================
 
     private void mostrarJanelaRenomear(
@@ -1013,16 +1293,16 @@ public class ChatController {
 
         janela.setResizable(false);
 
-
         Label titulo =
-                new Label("✎ Renomear conversa");
+                new Label(
+                        "✎ Renomear conversa"
+                );
 
         titulo.setStyle(
                 "-fx-font-size: 19px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #5B3E9C;"
         );
-
 
         Label descricao =
                 new Label(
@@ -1033,7 +1313,6 @@ public class ChatController {
                 "-fx-font-size: 13px;"
                         + "-fx-text-fill: #8873B3;"
         );
-
 
         TextField campoNome =
                 new TextField(nomeAtual);
@@ -1050,7 +1329,6 @@ public class ChatController {
                         + "-fx-text-fill: #4C3A6E;"
         );
 
-
         Button botaoCancelar =
                 new Button("Cancelar");
 
@@ -1062,7 +1340,6 @@ public class ChatController {
                         + "-fx-font-weight: bold;"
                         + "-fx-cursor: hand;"
         );
-
 
         Button botaoSalvar =
                 new Button("Salvar");
@@ -1076,7 +1353,6 @@ public class ChatController {
                         + "-fx-cursor: hand;"
         );
 
-
         HBox botoes =
                 new HBox(
                         10,
@@ -1087,7 +1363,6 @@ public class ChatController {
         botoes.setAlignment(
                 Pos.CENTER_RIGHT
         );
-
 
         VBox conteudo =
                 new VBox(
@@ -1110,19 +1385,26 @@ public class ChatController {
                         + "-fx-border-width: 1;"
         );
 
-        DropShadow sombra = new DropShadow();
-        sombra.setRadius(24);
-        sombra.setColor(
-                javafx.scene.paint.Color.rgb(76, 42, 133, 0.35)
-        );
-        conteudo.setEffect(sombra);
+        DropShadow sombra =
+                new DropShadow();
 
+        sombra.setRadius(24);
+
+        sombra.setColor(
+                javafx.scene.paint.Color.rgb(
+                        76,
+                        42,
+                        133,
+                        0.35
+                )
+        );
+
+        conteudo.setEffect(sombra);
 
         botaoCancelar.setOnAction(
                 evento ->
                         janela.close()
         );
-
 
         botaoSalvar.setOnAction(
                 evento -> {
@@ -1133,7 +1415,9 @@ public class ChatController {
                                     .trim();
 
                     if (novoNome.isEmpty()) {
+
                         campoNome.requestFocus();
+
                         return;
                     }
 
@@ -1146,7 +1430,8 @@ public class ChatController {
                                 );
                     }
 
-                    if (indice < nomesConversas.size()) {
+                    if (indice <
+                            nomesConversas.size()) {
 
                         nomesConversas.set(
                                 indice,
@@ -1169,12 +1454,26 @@ public class ChatController {
                         );
                     }
 
+                    /*
+                     * Agora também salva o nome no banco.
+                     */
+                    if (indice <
+                            idsConversas.size()) {
+
+                        int idBanco =
+                                idsConversas.get(indice);
+
+                        ConversaDAO.atualizarTitulo(
+                                idBanco,
+                                novoNome
+                        );
+                    }
+
                     atualizarHistoricoVisual();
 
                     janela.close();
                 }
         );
-
 
         campoNome.setOnKeyPressed(
                 evento -> {
@@ -1194,7 +1493,6 @@ public class ChatController {
                 }
         );
 
-
         Scene cena =
                 new Scene(
                         conteudo,
@@ -1213,7 +1511,7 @@ public class ChatController {
 
 
     // =========================================================
-    // EXCLUIR CONVERSA
+    // EXCLUIR
     // =========================================================
 
     private void excluirConversa(int indice) {
@@ -1241,7 +1539,6 @@ public class ChatController {
                     ).replace("💬 ", "");
         }
 
-
         boolean confirmou =
                 mostrarJanelaExclusao(
                         titulo
@@ -1251,11 +1548,27 @@ public class ChatController {
             return;
         }
 
+        /*
+         * =====================================================
+         * CORREÇÃO PRINCIPAL DO BUG
+         * =====================================================
+         *
+         * Agora excluímos também a conversa do BANCO.
+         */
+        if (indice < idsConversas.size()) {
 
-        // =====================================================
-        // SE A CONVERSA EXCLUÍDA ESTÁ ABERTA
-        // =====================================================
+            int idBanco =
+                    idsConversas.get(indice);
 
+            ConversaDAO.excluirConversa(
+                    idBanco
+            );
+        }
+
+        /*
+         * Se a conversa excluída era a que estava aberta,
+         * limpamos a tela.
+         */
         if (indice == conversaSalvaAtual) {
 
             idConversaAtual++;
@@ -1279,16 +1592,21 @@ public class ChatController {
             conversaSalvaAtual--;
         }
 
-
-        // =====================================================
-        // REMOVER CONVERSA
-        // =====================================================
-
+        /*
+         * Remove das listas da memória.
+         */
         conversasSalvas.remove(indice);
 
-        if (indice < nomesConversas.size()) {
+        if (indice <
+                nomesConversas.size()) {
 
             nomesConversas.remove(indice);
+        }
+
+        if (indice <
+                idsConversas.size()) {
+
+            idsConversas.remove(indice);
         }
 
         atualizarHistoricoVisual();
@@ -1296,7 +1614,7 @@ public class ChatController {
 
 
     // =========================================================
-    // JANELA BONITA DE EXCLUSÃO
+    // JANELA EXCLUSÃO
     // =========================================================
 
     private boolean mostrarJanelaExclusao(
@@ -1327,10 +1645,8 @@ public class ChatController {
 
         janela.setResizable(false);
 
-
         final boolean[] confirmou =
                 {false};
-
 
         Label icone =
                 new Label("🗑");
@@ -1339,16 +1655,16 @@ public class ChatController {
                 "-fx-font-size: 30px;"
         );
 
-
         Label titulo =
-                new Label("Excluir conversa?");
+                new Label(
+                        "Excluir conversa?"
+                );
 
         titulo.setStyle(
                 "-fx-font-size: 19px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #5B3E9C;"
         );
-
 
         Label nome =
                 new Label(
@@ -1365,7 +1681,6 @@ public class ChatController {
                         + "-fx-text-fill: #6A31C9;"
         );
 
-
         Label aviso =
                 new Label(
                         "Essa conversa será removida do histórico."
@@ -1380,7 +1695,6 @@ public class ChatController {
                         + "-fx-text-fill: #8873B3;"
         );
 
-
         Button botaoCancelar =
                 new Button("Cancelar");
 
@@ -1392,7 +1706,6 @@ public class ChatController {
                         + "-fx-font-weight: bold;"
                         + "-fx-cursor: hand;"
         );
-
 
         Button botaoExcluir =
                 new Button("Excluir");
@@ -1406,7 +1719,6 @@ public class ChatController {
                         + "-fx-cursor: hand;"
         );
 
-
         HBox botoes =
                 new HBox(
                         10,
@@ -1417,7 +1729,6 @@ public class ChatController {
         botoes.setAlignment(
                 Pos.CENTER_RIGHT
         );
-
 
         VBox conteudo =
                 new VBox(
@@ -1441,19 +1752,26 @@ public class ChatController {
                         + "-fx-border-width: 1;"
         );
 
-        DropShadow sombra = new DropShadow();
-        sombra.setRadius(24);
-        sombra.setColor(
-                javafx.scene.paint.Color.rgb(76, 42, 133, 0.35)
-        );
-        conteudo.setEffect(sombra);
+        DropShadow sombra =
+                new DropShadow();
 
+        sombra.setRadius(24);
+
+        sombra.setColor(
+                javafx.scene.paint.Color.rgb(
+                        76,
+                        42,
+                        133,
+                        0.35
+                )
+        );
+
+        conteudo.setEffect(sombra);
 
         botaoCancelar.setOnAction(
                 evento ->
                         janela.close()
         );
-
 
         botaoExcluir.setOnAction(
                 evento -> {
@@ -1463,7 +1781,6 @@ public class ChatController {
                     janela.close();
                 }
         );
-
 
         Scene cena =
                 new Scene(
@@ -1567,9 +1884,7 @@ public class ChatController {
         chatBox.getChildren().clear();
 
         ultimaRespostaIA = "";
-
         ultimaPergunta = "";
-
         regenerando = false;
 
         indicadorOrigem.setText("");
@@ -1584,6 +1899,10 @@ public class ChatController {
 
             String content =
                     mensagem.getContent();
+
+            if ("system".equals(role)) {
+                continue;
+            }
 
             if ("user".equals(role)) {
 
@@ -1619,8 +1938,9 @@ public class ChatController {
 
         campoMensagem.requestFocus();
 
-        Platform.runLater(() ->
-                scrollChat.setVvalue(1.0)
+        Platform.runLater(
+                () ->
+                        scrollChat.setVvalue(1.0)
         );
     }
 
@@ -1663,7 +1983,10 @@ public class ChatController {
 
         temaEscuro = !temaEscuro;
 
-        preferencias.putBoolean("temaEscuro", temaEscuro);
+        preferencias.putBoolean(
+                "temaEscuro",
+                temaEscuro
+        );
 
         if (temaEscuro) {
 
@@ -1676,7 +1999,12 @@ public class ChatController {
             }
 
             botaoTema.setText("🌙");
-            botaoTema.setTooltip(criarTooltipRapida("Deseja mudar o tema?"));
+
+            botaoTema.setTooltip(
+                    criarTooltipRapida(
+                            "Deseja mudar o tema?"
+                    )
+            );
 
             if (particulasFundo != null) {
                 particulasFundo.aplicarTemaEscuro();
@@ -1689,7 +2017,12 @@ public class ChatController {
             );
 
             botaoTema.setText("☀");
-            botaoTema.setTooltip(criarTooltipRapida("Deseja mudar o tema?"));
+
+            botaoTema.setTooltip(
+                    criarTooltipRapida(
+                            "Deseja mudar o tema?"
+                    )
+            );
 
             if (particulasFundo != null) {
                 particulasFundo.aplicarTemaClaro();
@@ -1800,3 +2133,4 @@ public class ChatController {
         }
     }
 }
+
