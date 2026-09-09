@@ -8,13 +8,12 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-
     @Override
     public void start(Stage stage) throws Exception {
 
         FXMLLoader loader = new FXMLLoader(
                 Main.class.getResource(
-                        "/com/example/chatdesktop/view/chat-view.fxml"
+                        "/com/example/chatdesktop/view/login-view.fxml"
                 )
         );
 
