@@ -297,7 +297,7 @@ Projeto desenvolvido para fins educacionais durante o curso de **Análise e Dese
 ### Integrantes
 
 * **Yara Vitória da Silva Reis**
-* **Samara**
+
 
 ---
 
