@@ -1,35 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
+        <?import javafx.scene.control.Button?>
+        <?import javafx.scene.control.Label?>
+        <?import javafx.scene.control.PasswordField?>
+        <?import javafx.scene.control.TextField?>
+        <?import javafx.scene.layout.AnchorPane?>
+        <?import javafx.scene.layout.VBox?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.example.chatdesktop.LoginController"
-            prefHeight="400.0"
-            prefWidth="600.0">
+            stylesheets="@loguin.css"
+            styleClass="login-root">
 
-    <VBox spacing="15"
-          alignment="CENTER"
-          AnchorPane.topAnchor="50.0"
-          AnchorPane.bottomAnchor="50.0"
-          AnchorPane.leftAnchor="100.0"
-          AnchorPane.rightAnchor="100.0">
+    <VBox styleClass="login-background"
+          AnchorPane.topAnchor="0.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0">
 
-        <Label text="Login"/>
+        <VBox styleClass="login-card"
+              alignment="CENTER"
+              spacing="14"
+              maxWidth="420.0"
+              maxHeight="500.0">
 
-        <TextField fx:id="usuarioField"
-                   promptText="Usuário"/>
+            <Label text="✦"
+                   styleClass="login-icon"/>
 
-        <PasswordField fx:id="senhaField"
-                       promptText="Senha"/>
+            <Label text="Chat IA"
+                   styleClass="login-logo"/>
 
-        <Button text="Entrar"
-                onAction="#fazerLogin"/>
+            <Label text="Bem-vindo de volta!"
+                   styleClass="login-titulo"/>
+
+            <Label text="Entre para continuar sua conversa."
+                   styleClass="login-subtitulo"/>
+
+
+            <VBox spacing="7"
+                  maxWidth="320.0"
+                  styleClass="campo-grupo">
+
+                <Label text="USUÁRIO"
+                       styleClass="login-label"/>
+
+                <TextField fx:id="usuarioField"
+                           promptText="Digite seu usuário"
+                           styleClass="login-campo"/>
+
+            </VBox>
+
+
+            <VBox spacing="7"
+                  maxWidth="320.0"
+                  styleClass="campo-grupo">
+
+                <Label text="SENHA"
+                       styleClass="login-label"/>
+
+                <PasswordField fx:id="senhaField"
+                               promptText="Digite sua senha"
+                               styleClass="login-campo"/>
+
+            </VBox>
+
+
+            <Button text="ENTRAR"
+                    onAction="#fazerLogin"
+                    prefWidth="320.0"
+                    prefHeight="48.0"
+                    styleClass="login-botao"/>
+
+
+            <Label text="Seu espaço para conversar, perguntar e descobrir."
+                   styleClass="login-rodape"
+                   wrapText="true"/>
+
+        </VBox>
 
     </VBox>
 
 </AnchorPane>
+

@@ -1,0 +1,161 @@
+/* =========================================================
+   CHAT IA — TELA DE LOGIN
+   ========================================================= */
+
+.login-root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: linear-gradient(
+            to bottom right,
+            #B39CDB 0%,
+            #8B6FCB 35%,
+            #6A31C9 70%,
+            #2E1050 100%
+    );
+}
+
+/* FUNDO */
+.login-background {
+    -fx-alignment: CENTER;
+    -fx-padding: 40px;
+}
+
+/* CARD PRINCIPAL */
+.login-card {
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+    -fx-background-radius: 28px;
+
+    -fx-border-color: rgba(255, 255, 255, 0.35);
+    -fx-border-width: 1px;
+    -fx-border-radius: 28px;
+
+    -fx-padding: 45px 50px;
+
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(20, 9, 31, 0.40),
+            30,
+            0.20,
+            0,
+            12
+    );
+}
+
+/* ÍCONE */
+.login-icon {
+    -fx-font-size: 38px;
+    -fx-text-fill: #E8DCFF;
+}
+
+/* LOGO */
+.login-logo {
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* TÍTULO */
+.login-titulo {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 8px 0 0 0;
+}
+
+/* SUBTÍTULO */
+.login-subtitulo {
+    -fx-font-size: 13px;
+    -fx-text-fill: rgba(255, 255, 255, 0.72);
+    -fx-padding: 0 0 15px 0;
+}
+
+/* GRUPO DOS CAMPOS */
+.campo-grupo {
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* LABEL DOS CAMPOS */
+.login-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #E8DCFF;
+    -fx-padding: 0 0 2px 3px;
+}
+
+/* CAMPOS */
+.login-campo {
+    -fx-background-color: rgba(255, 255, 255, 0.13);
+
+    -fx-text-fill: #FFFFFF;
+    -fx-prompt-text-fill: rgba(255, 255, 255, 0.45);
+
+    -fx-font-size: 13px;
+
+    -fx-background-radius: 13px;
+    -fx-border-radius: 13px;
+
+    -fx-border-color: rgba(255, 255, 255, 0.25);
+    -fx-border-width: 1px;
+
+    -fx-padding: 12px 15px;
+    -fx-pref-height: 46px;
+
+    -fx-cursor: text;
+
+    -fx-highlight-fill: #8B6FCB;
+    -fx-highlight-text-fill: #FFFFFF;
+}
+
+
+/* BOTÃO ENTRAR */
+.login-botao {
+    -fx-background-color: linear-gradient(
+            to right,
+            #A78BDB,
+            #7C3AED
+    );
+
+    -fx-text-fill: #FFFFFF;
+
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+
+    -fx-background-radius: 13px;
+    -fx-border-radius: 13px;
+
+    -fx-border-color: rgba(255, 255, 255, 0.20);
+    -fx-border-width: 1px;
+
+    -fx-cursor: hand;
+
+    -fx-effect: dropshadow(
+            gaussian,
+            rgba(20, 9, 31, 0.30),
+            12,
+            0,
+            0,
+            5
+    );
+}
+
+/* BOTÃO — HOVER */
+.login-botao:hover {
+    -fx-background-color: linear-gradient(
+            to right,
+            #B39CDB,
+            #8B5CF6
+    );
+
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+/* RODAPÉ */
+.login-rodape {
+    -fx-font-size: 10px;
+    -fx-text-fill: rgba(255, 255, 255, 0.45);
+
+    -fx-padding: 12px 20px 0 20px;
+
+    -fx-alignment: CENTER;
+    -fx-text-alignment: CENTER;
+}

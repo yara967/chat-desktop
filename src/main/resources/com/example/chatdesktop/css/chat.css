@@ -1,24 +1,15 @@
 /* =========================================================
-   ✦ CHAT IA — ROXO VIVO / GRADIENTE COSMIC ✦
+   ✦ CHAT IA — ESTILO ROXO VIVO / GRADIENTE COSMIC ✦
    ========================================================= */
 
 .root-pane {
-    -fx-background-color: linear-gradient(
-            to bottom right,
-            #B39CDB 0%,
-            #DACBEF 22%,
-            #F4EFFB 45%,
-            #E4D6F4 65%,
-            #C7AEE5 82%,
-            #A78BDB 100%
-    );
-
+    -fx-background-color: linear-gradient(to bottom right, #B39CDB 0%, #DACBEF 22%, #F4EFFB 45%, #E4D6F4 65%, #C7AEE5 82%, #A78BDB 100%);
     -fx-font-family: "Segoe UI";
 }
 
 
 /* =========================================================
-   SIDEBAR
+   SIDEBAR (vidro sobre o gradiente)
    ========================================================= */
 
 .sidebar {
@@ -28,14 +19,7 @@
 
     -fx-border-width: 0 1px 0 0;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(106, 49, 201, 0.08),
-            16,
-            0,
-            4,
-            0
-    );
+    -fx-effect: dropshadow(gaussian, rgba(106, 49, 201, 0.08), 16, 0, 4, 0);
 }
 
 
@@ -62,11 +46,7 @@
    ========================================================= */
 
 .sidebar-botao-nova {
-    -fx-background-color: linear-gradient(
-            to right,
-            #A78BDB,
-            #7C3AED
-    );
+    -fx-background-color: linear-gradient(to right, #A78BDB, #7C3AED);
 
     -fx-text-fill: #FFFFFF;
 
@@ -80,23 +60,12 @@
 
     -fx-cursor: hand;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(76, 42, 133, 0.35),
-            14,
-            0,
-            0,
-            4
-    );
+    -fx-effect: dropshadow(gaussian, rgba(76, 42, 133, 0.35), 14, 0, 0, 4);
 }
 
 
 .sidebar-botao-nova:hover {
-    -fx-background-color: linear-gradient(
-            to right,
-            #8B6FCB,
-            #6A31C9
-    );
+    -fx-background-color: linear-gradient(to right, #8B6FCB, #6A31C9);
 
     -fx-scale-x: 1.02;
 
@@ -138,10 +107,6 @@
 }
 
 
-/* =========================================================
-   ITEM DA CONVERSA
-   ========================================================= */
-
 .item-historico {
     -fx-background-color: rgba(255, 255, 255, 0.85);
 
@@ -155,14 +120,7 @@
 
     -fx-cursor: hand;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(76, 42, 133, 0.15),
-            8,
-            0,
-            0,
-            2
-    );
+    -fx-effect: dropshadow(gaussian, rgba(76, 42, 133, 0.15), 8, 0, 0, 2);
 }
 
 
@@ -170,42 +128,6 @@
     -fx-background-color: #FFFFFF;
 
     -fx-text-fill: #6A31C9;
-}
-
-
-/* =========================================================
-   🗑️ BOTÃO DA LIXEIRA
-   ========================================================= */
-
-.botao-excluir {
-    -fx-background-color: rgba(255, 255, 255, 0.75);
-
-    -fx-text-fill: #6A31C9;
-
-    -fx-font-size: 13px;
-
-    -fx-font-weight: bold;
-
-    -fx-background-radius: 10px;
-
-    -fx-border-radius: 10px;
-
-    -fx-border-color: transparent;
-
-    -fx-padding: 7px 9px;
-
-    -fx-cursor: hand;
-}
-
-
-.botao-excluir:hover {
-    -fx-background-color: #F0E6FF;
-
-    -fx-text-fill: #7C3AED;
-
-    -fx-scale-x: 1.08;
-
-    -fx-scale-y: 1.08;
 }
 
 
@@ -248,14 +170,7 @@
 
     -fx-border-width: 0 0 1px 0;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(106, 49, 201, 0.08),
-            16,
-            0,
-            0,
-            4
-    );
+    -fx-effect: dropshadow(gaussian, rgba(106, 49, 201, 0.08), 16, 0, 0, 4);
 }
 
 
@@ -341,27 +256,16 @@
    ========================================================= */
 
 .balao-usuario {
-    -fx-background-color: linear-gradient(
-            to right,
-            #8B6FCB,
-            #6A31C9
-    );
+    -fx-background-color: linear-gradient(to right, #8B6FCB, #6A31C9);
 
     -fx-text-fill: #FFFFFF;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(76, 42, 133, 0.3),
-            10,
-            0,
-            0,
-            3
-    );
+    -fx-effect: dropshadow(gaussian, rgba(76, 42, 133, 0.3), 10, 0, 0, 3);
 }
 
 
 /* =========================================================
-   BALÃO DA IA
+   BALÃO DA IA (cartão branco flutuando, tipo referência)
    ========================================================= */
 
 .balao-ia {
@@ -373,14 +277,7 @@
 
     -fx-border-width: 0;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(76, 42, 133, 0.18),
-            14,
-            0,
-            0,
-            5
-    );
+    -fx-effect: dropshadow(gaussian, rgba(76, 42, 133, 0.18), 14, 0, 0, 5);
 }
 
 
@@ -406,14 +303,7 @@
 
     -fx-padding: 5px;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(76, 42, 133, 0.2),
-            16,
-            0,
-            0,
-            6
-    );
+    -fx-effect: dropshadow(gaussian, rgba(76, 42, 133, 0.2), 16, 0, 0, 6);
 }
 
 
@@ -441,11 +331,7 @@
    ========================================================= */
 
 .botao-enviar {
-    -fx-background-color: linear-gradient(
-            to bottom right,
-            #8B6FCB,
-            #6A31C9
-    );
+    -fx-background-color: linear-gradient(to bottom right, #8B6FCB, #6A31C9);
 
     -fx-text-fill: #FFFFFF;
 
@@ -457,23 +343,12 @@
 
     -fx-cursor: hand;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(76, 42, 133, 0.45),
-            12,
-            0,
-            0,
-            3
-    );
+    -fx-effect: dropshadow(gaussian, rgba(76, 42, 133, 0.45), 12, 0, 0, 3);
 }
 
 
 .botao-enviar:hover {
-    -fx-background-color: linear-gradient(
-            to bottom right,
-            #7C3AED,
-            #5B2AA5
-    );
+    -fx-background-color: linear-gradient(to bottom right, #7C3AED, #5B2AA5);
 
     -fx-scale-x: 1.06;
 
@@ -514,45 +389,6 @@
 
 
 /* =========================================================
-   BOTÃO REGENERAR
-   ========================================================= */
-
-.botao-regenerar-resposta {
-    -fx-background-color: #F0E6FF;
-
-    -fx-text-fill: #4F2878;
-
-    -fx-font-size: 13px;
-
-    -fx-font-weight: bold;
-
-    -fx-background-radius: 13px;
-
-    -fx-border-radius: 13px;
-
-    -fx-border-color: #D8C2F0;
-
-    -fx-border-width: 1px;
-
-    -fx-padding: 10px 15px;
-
-    -fx-cursor: hand;
-}
-
-
-.botao-regenerar-resposta:hover {
-    -fx-background-color: #E5D5FA;
-
-    -fx-text-fill: #6A31C9;
-}
-
-
-.botao-regenerar-resposta:disabled {
-    -fx-opacity: 0.5;
-}
-
-
-/* =========================================================
    RODAPÉ
    ========================================================= */
 
@@ -564,30 +400,11 @@
 
 
 /* =========================================================
-   INDICADOR DE ORIGEM
-   ========================================================= */
-
-.indicador-origem {
-    -fx-font-size: 11px;
-
-    -fx-text-fill: #806B99;
-
-    -fx-alignment: center;
-}
-
-
-/* =========================================================
-   🌙 TEMA ESCURO
+   🌙 TEMA ESCURO (versão noturna, mesma família de cor)
    ========================================================= */
 
 .root-pane.tema-escuro {
-    -fx-background-color: linear-gradient(
-            to bottom,
-            #14091F,
-            #2E1050 45%,
-            #4C2A85 80%,
-            #6A31C9 100%
-    );
+    -fx-background-color: linear-gradient(to bottom, #14091F, #2E1050 45%, #4C2A85 80%, #6A31C9 100%);
 }
 
 
@@ -629,24 +446,6 @@
 }
 
 
-.root-pane.tema-escuro .botao-excluir {
-    -fx-background-color: rgba(255, 255, 255, 0.08);
-
-    -fx-text-fill: #C9B6EC;
-
-    -fx-border-color: rgba(167, 139, 219, 0.2);
-
-    -fx-border-width: 1px;
-}
-
-
-.root-pane.tema-escuro .botao-excluir:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.15);
-
-    -fx-text-fill: #E8DCFF;
-}
-
-
 .root-pane.tema-escuro .sidebar-botao-opcoes {
     -fx-text-fill: #C4B3DE;
 }
@@ -682,11 +481,7 @@
 
 
 .root-pane.tema-escuro .balao-usuario {
-    -fx-background-color: linear-gradient(
-            to right,
-            #8B6FCB,
-            #6A31C9
-    );
+    -fx-background-color: linear-gradient(to right, #8B6FCB, #6A31C9);
 
     -fx-text-fill: #FFFFFF;
 }
@@ -697,14 +492,7 @@
 
     -fx-text-fill: #EAE0FA;
 
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(0, 0, 0, 0.4),
-            10,
-            0,
-            0,
-            3
-    );
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 3);
 }
 
 
@@ -725,8 +513,7 @@
 
 
 .root-pane.tema-escuro .botao-copiar-resposta,
-.root-pane.tema-escuro .botao-tema,
-.root-pane.tema-escuro .botao-regenerar-resposta {
+.root-pane.tema-escuro .botao-tema {
     -fx-background-color: rgba(255, 255, 255, 0.08);
 
     -fx-text-fill: #C9B6EC;
@@ -738,8 +525,7 @@
 
 
 .root-pane.tema-escuro .botao-copiar-resposta:hover,
-.root-pane.tema-escuro .botao-tema:hover,
-.root-pane.tema-escuro .botao-regenerar-resposta:hover {
+.root-pane.tema-escuro .botao-tema:hover {
     -fx-background-color: rgba(255, 255, 255, 0.14);
 
     -fx-text-fill: #E8DCFF;
@@ -756,164 +542,108 @@
 }
 
 
-.root-pane.tema-escuro .indicador-origem {
-    -fx-text-fill: #C4B3DE;
-}
-
-
 /* =========================================================
-   ⚠️ JANELA DE CONFIRMAÇÃO
+   ESTADO VAZIO (boas-vindas do chat)
    ========================================================= */
 
-.dialog-pane {
-    -fx-background-color: #F8F3FF;
-
-    -fx-border-color: #D8C2F0;
-
-    -fx-border-width: 1px;
-
-    -fx-border-radius: 15px;
-
-    -fx-background-radius: 15px;
-
-    -fx-effect: dropshadow(
-            gaussian,
-            rgba(76, 42, 133, 0.30),
-            20,
-            0,
-            0,
-            6
-    );
+.estado-vazio-container {
+    -fx-background-color: transparent;
 }
 
-
-.dialog-pane .header-panel {
-    -fx-background-color: #F0E6FF;
-
-    -fx-background-radius: 14px 14px 0 0;
-
-    -fx-border-color: transparent;
+.estado-vazio-icone {
+    -fx-font-size: 46px;
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
 }
 
-
-.dialog-pane .header-panel .label {
-    -fx-text-fill: #4F2878;
-
-    -fx-font-size: 17px;
-
+.estado-vazio-texto {
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-}
-
-
-.dialog-pane .content.label {
-    -fx-text-fill: #6E4FA0;
-
-    -fx-font-size: 13px;
+    -fx-text-fill: rgba(255, 255, 255, 0.9);
 }
 
 
 /* =========================================================
-   BOTÕES DA CONFIRMAÇÃO
+   TOOLTIPS
    ========================================================= */
 
-.dialog-pane .button {
-    -fx-background-color: #FFFFFF;
-
-    -fx-text-fill: #6A31C9;
-
-    -fx-font-size: 13px;
-
-    -fx-font-weight: bold;
-
-    -fx-background-radius: 10px;
-
-    -fx-border-radius: 10px;
-
-    -fx-border-color: #D8C2F0;
-
-    -fx-border-width: 1px;
-
-    -fx-padding: 8px 18px;
-
-    -fx-cursor: hand;
+.tooltip {
+    -fx-background-color: #6A31C9;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-background-radius: 8px;
+    -fx-padding: 6 10;
 }
 
-
-.dialog-pane .button:hover {
-    -fx-background-color: #F0E6FF;
-
-    -fx-text-fill: #5B2AA5;
+.root-pane.tema-escuro .tooltip {
+    -fx-background-color: #2E1050;
 }
 
 
 /* =========================================================
-   BOTÃO EXCLUIR DA CONFIRMAÇÃO
-   ========================================================= */
-
-.dialog-pane .button:default {
-    -fx-background-color: linear-gradient(
-            to right,
-            #A78BDB,
-            #7C3AED
-    );
-
-    -fx-text-fill: #FFFFFF;
-
-    -fx-border-color: transparent;
-}
-
-
-.dialog-pane .button:default:hover {
-    -fx-background-color: linear-gradient(
-            to right,
-            #8B6FCB,
-            #6A31C9
-    );
-}
-
-/* =========================================================
-   BOTÃO RENOMEAR E EXCLUIR
+   BOTÕES DE RENOMEAR / EXCLUIR (histórico)
    ========================================================= */
 
 .botao-renomear,
 .botao-excluir {
-    -fx-background-color: #f0e6ff;
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+
     -fx-text-fill: #6A31C9;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-background-radius: 10px;
-    -fx-border-radius: 10px;
-    -fx-border-color: #d8c2f0;
-    -fx-border-width: 1px;
-    -fx-padding: 7px 9px;
+
+    -fx-font-size: 12px;
+
+    -fx-background-radius: 8px;
+
+    -fx-min-width: 26px;
+
+    -fx-min-height: 26px;
+
+    -fx-max-width: 26px;
+
+    -fx-max-height: 26px;
+
+    -fx-padding: 0;
+
     -fx-cursor: hand;
+
+    -fx-effect: dropshadow(gaussian, rgba(76, 42, 133, 0.12), 4, 0, 0, 1);
 }
 
-.botao-renomear:hover,
+.botao-renomear:hover {
+    -fx-background-color: #FFFFFF;
+
+    -fx-scale-x: 1.08;
+
+    -fx-scale-y: 1.08;
+}
+
 .botao-excluir:hover {
-    -fx-background-color: #e5d5fa;
-    -fx-text-fill: #4f2878;
+    -fx-background-color: #F3D9E8;
+
+    -fx-text-fill: #A1447A;
+
+    -fx-scale-x: 1.08;
+
+    -fx-scale-y: 1.08;
 }
 
-.botao-renomear:disabled,
-.botao-excluir:disabled {
-    -fx-opacity: 0.5;
-}
 
-
-/* =========================================================
-   TEMA ESCURO
-   ========================================================= */
+/* Tema escuro */
 
 .root-pane.tema-escuro .botao-renomear,
 .root-pane.tema-escuro .botao-excluir {
-    -fx-background-color: rgba(255, 255, 255, 0.08);
-    -fx-text-fill: #C9B6EC;
-    -fx-border-color: rgba(167, 139, 219, 0.25);
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+
+    -fx-text-fill: #D8CCE9;
+
+    -fx-effect: none;
 }
 
-.root-pane.tema-escuro .botao-renomear:hover,
+.root-pane.tema-escuro .botao-renomear:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+}
+
 .root-pane.tema-escuro .botao-excluir:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.14);
-    -fx-text-fill: #E8DCFF;
+    -fx-background-color: rgba(196, 90, 140, 0.35);
+
+    -fx-text-fill: #F3D9E8;
 }
