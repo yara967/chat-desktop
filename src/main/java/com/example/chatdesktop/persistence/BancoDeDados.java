@@ -55,6 +55,15 @@ public class BancoDeDados {
 
         criarPasta();
 
+        String sqlUsuarios = """
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario TEXT NOT NULL UNIQUE,
+                senha TEXT NOT NULL
+            )
+            """;
+
+
         String sqlConversas = """
             CREATE TABLE IF NOT EXISTS conversas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,13 +94,11 @@ public class BancoDeDados {
                         conexao.createStatement()
         ) {
 
-            statement.execute(
-                    sqlConversas
-            );
+            statement.execute(sqlUsuarios);
 
-            statement.execute(
-                    sqlMensagens
-            );
+            statement.execute(sqlConversas);
+
+            statement.execute(sqlMensagens);
 
             System.out.println(
                     "Banco de dados inicializado com sucesso."

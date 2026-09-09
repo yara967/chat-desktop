@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.chatdesktop.LoginController"
+            fx:controller="com.example.chatdesktop.CadastroController"
             stylesheets="@loguin.css"
             styleClass="login-root">
 
@@ -30,10 +30,10 @@
             <Label text="Chat IA"
                    styleClass="login-logo"/>
 
-            <Label text="Bem-vindo de volta!"
+            <Label text="Crie sua conta"
                    styleClass="login-titulo"/>
 
-            <Label text="Entre para continuar sua conversa."
+            <Label text="Cadastre-se para começar a conversar."
                    styleClass="login-subtitulo"/>
 
             <VBox spacing="7"
@@ -62,19 +62,26 @@
 
             </VBox>
 
-            <Button text="ENTRAR"
-                    onAction="#fazerLogin"
+            <VBox spacing="7"
+                  maxWidth="320.0"
+                  styleClass="campo-grupo">
+
+                <Label text="CONFIRMAR SENHA"
+                       styleClass="login-label"/>
+
+                <PasswordField fx:id="confirmarSenhaField"
+                               promptText="Digite a senha novamente"
+                               styleClass="login-campo"/>
+
+            </VBox>
+
+            <Button text="CRIAR CONTA"
+                    onAction="#cadastrar"
                     prefWidth="320.0"
                     prefHeight="48.0"
                     styleClass="login-botao"/>
 
-            <Button text="CRIAR UMA CONTA"
-                    onAction="#abrirCadastro"
-                    prefWidth="320.0"
-                    prefHeight="42.0"
-                    styleClass="login-botao-secundario"/>
-
-            <Label text="Seu espaço para conversar, perguntar e descobrir."
+            <Label text="Sua conta para acessar o Chat IA."
                    styleClass="login-rodape"
                    wrapText="true"/>
 
